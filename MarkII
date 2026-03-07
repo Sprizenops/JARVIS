@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Task Dashboard</title>
+<style>
+
+body{
+background:#0a0a0a;
+color:#00ffff;
+font-family:Arial;
+text-align:center;
+}
+
+h1{
+text-shadow:0 0 10px cyan;
+}
+
+.container{
+width:80%;
+margin:auto;
+}
+
+input{
+padding:10px;
+margin:5px;
+background:black;
+color:cyan;
+border:1px solid cyan;
+}
+
+button{
+padding:10px;
+background:cyan;
+border:none;
+cursor:pointer;
+}
+
+.task{
+margin:5px;
+padding:10px;
+border:1px solid cyan;
+}
+
+.completed{
+text-decoration:line-through;
+color:gray;
+}
+
+#aiBox{
+margin-top:30px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>⚡ Mission Dashboard</h1>
+
+<div class="container">
+
+<h2>Today's Goals</h2>
+
+<input id="taskInput" placeholder="Enter a mission...">
+<button onclick="addTask()">Add</button>
+
+<div id="taskList"></div>
+
+<h2>Progress</h2>
+<p id="progress">0%</p>
+
+<div id="aiBox">
+<h2>Ask the System</h2>
+<input id="question" placeholder="Ask something...">
+<button onclick="askAI()">Ask</button>
+<p id="response"></p>
+</div>
+
+</div>
+
+<script>
+
+let tasks = []
+
+function addTask(){
+
+let input = document.getElementById("taskInput")
+let taskText = input.value
+
+if(taskText=="") return
+
+tasks.push({text:taskText,done:false})
+input.value=""
+
+render()
+}
+
+function render(){
+
+let list = document.getElementById("taskList")
+list.innerHTML=""
+
+let completed=0
+
+tasks.forEach((task,i)=>{
+
+let div=document.createElement("div")
+div.className="task"
+
+if(task.done){
+div.classList.add("completed")
+completed++
+}
+
+div.innerHTML=task.text
+
+div.onclick=()=>{
+tasks[i].done=!tasks[i].done
+render()
+}
+
+list.appendChild(div)
+
+})
+
+let percent = tasks.length ? Math.round(completed/tasks.length*100) : 0
+document.getElementById("progress").innerText = percent+"%"
+
+}
+
+function askAI(){
+
+let q=document.getElementById("question").value
+let r=document.getElementById("response")
+
+if(q.includes("time")){
+r.innerText="System Time: "+new Date().toLocaleTimeString()
+}
+else if(q.includes("date")){
+r.innerText="Today's Date: "+new Date().toDateString()
+}
+else{
+r.innerText="Processing request..."
+}
+
+}
+
+</script>
+
+</body>
+</html>
