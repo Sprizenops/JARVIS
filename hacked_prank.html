@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Alert</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #ff2200;
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    overflow: hidden;
+    cursor: none;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.15) 2px,
+      rgba(0,0,0,0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Static noise background */
+  .noise {
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* Glitch header */
+  .skull {
+    font-size: clamp(60px, 10vw, 100px);
+    animation: pulse 0.5s ease-in-out infinite alternate;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 20px #ff2200);
+  }
+
+  @keyframes pulse {
+    from { transform: scale(1); filter: drop-shadow(0 0 10px #ff2200); }
+    to { transform: scale(1.05); filter: drop-shadow(0 0 30px #ff0000) drop-shadow(0 0 60px #ff000066); }
+  }
+
+  .title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    color: #ff2200;
+    text-shadow: 0 0 20px #ff2200, 0 0 60px #ff000088;
+    animation: glitch 2s infinite;
+    margin-bottom: 8px;
+  }
+
+  @keyframes glitch {
+    0%, 90%, 100% { transform: none; clip-path: none; }
+    91% { transform: translate(-3px, 1px) skewX(-2deg); color: #ff0055; }
+    93% { transform: translate(3px, -1px) skewX(2deg); color: #ff2200; }
+    95% { transform: translate(-2px, 2px); }
+    97% { transform: translate(2px, -2px) skewX(-1deg); color: #ff6600; }
+  }
+
+  .subtitle {
+    font-size: clamp(11px, 1.5vw, 14px);
+    letter-spacing: 8px;
+    color: #ff660099;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+
+  /* Main warning box */
+  .warning-box {
+    border: 2px solid #ff2200;
+    background: rgba(20, 0, 0, 0.92);
+    padding: 30px 40px;
+    max-width: 720px;
+    width: 100%;
+    box-shadow: 0 0 40px #ff220044, inset 0 0 40px rgba(255,0,0,0.05);
+    position: relative;
+    animation: borderFlicker 3s infinite;
+  }
+
+  @keyframes borderFlicker {
+    0%, 95%, 100% { border-color: #ff2200; box-shadow: 0 0 40px #ff220044, inset 0 0 40px rgba(255,0,0,0.05); }
+    96% { border-color: #ff6600; box-shadow: 0 0 80px #ff660066; }
+    97% { border-color: #ff0000; }
+    98% { border-color: #ff2200; }
+  }
+
+  .warning-box::before {
+    content: '⚠ CRITICAL SYSTEM ALERT ⚠';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff2200;
+    color: #000;
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    padding: 2px 14px;
+    white-space: nowrap;
+  }
+
+  .log-lines {
+    font-size: clamp(10px, 1.3vw, 13px);
+    line-height: 1.9;
+    color: #ff4400cc;
+    margin-bottom: 24px;
+  }
+
+  .log-line { overflow: hidden; white-space: nowrap; }
+  .log-line.ok { color: #00ff4488; }
+  .log-line.warn { color: #ffaa00cc; }
+  .log-line.crit { color: #ff2200; animation: blink 0.6s infinite; }
+
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.3; }
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #ff220033;
+    margin: 20px 0;
+  }
+
+  .threat-list {
+    list-style: none;
+    margin-bottom: 24px;
+  }
+
+  .threat-list li {
+    font-size: clamp(11px, 1.4vw, 13px);
+    padding: 5px 0;
+    padding-left: 24px;
+    position: relative;
+    color: #ff6600cc;
+  }
+
+  .threat-list li::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    color: #ff2200;
+    animation: blink 0.8s infinite;
+  }
+
+  .threat-list li strong {
+    color: #ff2200;
+    font-weight: normal;
+  }
+
+  /* Countdown */
+  .countdown-section {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .countdown-label {
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: #ff440088;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .countdown {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(42px, 8vw, 72px);
+    font-weight: 900;
+    color: #ff2200;
+    text-shadow: 0 0 30px #ff2200, 0 0 80px #ff000066;
+    letter-spacing: 10px;
+    animation: countFlicker 0.1s infinite;
+    line-height: 1;
+  }
+
+  @keyframes countFlicker {
+    0%, 85%, 100% { opacity: 1; }
+    86% { opacity: 0.85; }
+    92% { opacity: 1; }
+    93% { opacity: 0.7; }
+  }
+
+  .countdown-sub {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #ff220066;
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-top: 30px;
+    width: 100%;
+    max-width: 720px;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #ff440066;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: #1a0000;
+    border: 1px solid #ff220033;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff0000, #ff6600, #ff0000);
+    background-size: 200% 100%;
+    animation: progressAnim 1.5s linear infinite, progressGrow 30s linear forwards;
+    width: 0%;
+    box-shadow: 0 0 10px #ff2200;
+  }
+
+  @keyframes progressAnim {
+    0% { background-position: 0% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes progressGrow {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
+
+  /* IP info */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 24px;
+    font-size: clamp(9px, 1.2vw, 11px);
+  }
+
+  .info-item {
+    background: rgba(255,0,0,0.04);
+    border: 1px solid #ff220022;
+    padding: 8px 12px;
+  }
+
+  .info-item .key {
+    color: #ff440055;
+    letter-spacing: 2px;
+    font-size: 9px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .info-item .val {
+    color: #ff6600cc;
+  }
+
+  /* Corner decorations */
+  .corner {
+    position: fixed;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #ff220033;
+    text-transform: uppercase;
+  }
+  .corner.tl { top: 16px; left: 16px; }
+  .corner.tr { top: 16px; right: 16px; }
+  .corner.bl { bottom: 16px; left: 16px; }
+  .corner.br { bottom: 16px; right: 16px; }
+
+  /* Random glitch flash */
+  .glitch-flash {
+    position: fixed;
+    inset: 0;
+    background: #ff0000;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    animation: flashAnim 8s infinite;
+  }
+
+  @keyframes flashAnim {
+    0%, 89%, 91%, 93%, 100% { opacity: 0; }
+    90% { opacity: 0.08; }
+    92% { opacity: 0.04; }
+  }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="glitch-flash"></div>
+
+<div class="corner tl">SYS::MONITOR_v4.1.2</div>
+<div class="corner tr" id="clock">00:00:00</div>
+<div class="corner bl">NODE: <span style="color:#ff2200">COMPROMISED</span></div>
+<div class="corner br">THREAT LEVEL: <span style="color:#ff2200">CRITICAL</span></div>
+
+<div class="container">
+  <div class="skull">☠</div>
+  <div class="title">SYSTEM BREACH</div>
+  <div class="subtitle">unauthorized access detected</div>
+
+  <div class="warning-box">
+    <div class="log-lines">
+      <div class="log-line ok">[00:00:01] Kernel boot sequence ............... OK</div>
+      <div class="log-line ok">[00:00:02] Network interface initialized ........ OK</div>
+      <div class="log-line warn">[00:00:04] Firewall integrity check ......... WARNING</div>
+      <div class="log-line warn">[00:00:05] Anomalous packet detected [193.x.x.x] ...</div>
+      <div class="log-line crit">[00:00:06] INTRUSION DETECTED — ROOT ACCESS GRANTED</div>
+      <div class="log-line crit">[00:00:07] ████ ENCRYPTION KEYS EXPOSED ████</div>
+    </div>
+
+    <hr class="divider">
+
+    <ul class="threat-list">
+      <li><strong>MALWARE INJECTED:</strong> Trojan.Rootkit.ZeroDay — C drive encrypted</li>
+      <li><strong>DATA EXFILTRATION:</strong> 47.3 GB transmitted to remote server</li>
+      <li><strong>KEYLOGGER ACTIVE:</strong> All keystrokes recorded since 08:12:33</li>
+      <li><strong>WEBCAM ACCESSED:</strong> Recording in progress</li>
+      <li><strong>CREDENTIALS STOLEN:</strong> Browser passwords, cookies, sessions</li>
+    </ul>
+
+    <hr class="divider">
+
+    <div class="countdown-section">
+      <div class="countdown-label">⚠ permanent file deletion in</div>
+      <div class="countdown" id="timer">00:30</div>
+      <div class="countdown-sub">all data will be unrecoverable</div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="key">Your IP Address</div>
+        <div class="val" id="ip">Scanning...</div>
+      </div>
+      <div class="info-item">
+        <div class="key">Location</div>
+        <div class="val" id="loc">Resolving...</div>
+      </div>
+      <div class="info-item">
+        <div class="key">Attacker Origin</div>
+        <div class="val">193.47.88.201 [RU]</div>
+      </div>
+      <div class="info-item">
+        <div class="key">Files Targeted</div>
+        <div class="val" id="filecount">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>encrypting files...</span>
+      <span id="pct">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="pfill"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toTimeString().slice(0,8);
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Countdown timer - 30 seconds
+  let secs = 30;
+  const timerEl = document.getElementById('timer');
+  const interval = setInterval(() => {
+    secs--;
+    if (secs < 0) secs = 0;
+    const m = String(Math.floor(secs/60)).padStart(2,'0');
+    const s = String(secs % 60).padStart(2,'0');
+    timerEl.textContent = `${m}:${s}`;
+    if (secs === 0) {
+      timerEl.textContent = 'DELETED';
+      timerEl.style.fontSize = 'clamp(28px, 5vw, 48px)';
+      clearInterval(interval);
+    }
+  }, 1000);
+
+  // Fake IP
+  setTimeout(() => {
+    const fakeOctets = () => Math.floor(Math.random()*256);
+    document.getElementById('ip').textContent =
+      `${fakeOctets()}.${fakeOctets()}.${fakeOctets()}.${fakeOctets()}`;
+    document.getElementById('loc').textContent =
+      ['New York, US','London, UK','Sydney, AU','Toronto, CA'][Math.floor(Math.random()*4)];
+  }, 1200);
+
+  // File count climbing
+  let files = 0;
+  const fileEl = document.getElementById('filecount');
+  const fileInterval = setInterval(() => {
+    files += Math.floor(Math.random() * 80 + 20);
+    fileEl.textContent = files.toLocaleString() + ' files';
+    if (files > 48000) clearInterval(fileInterval);
+  }, 200);
+
+  // Progress percentage label
+  const pctEl = document.getElementById('pct');
+  let pct = 0;
+  const pctInterval = setInterval(() => {
+    pct += (100/30) * 0.5;
+    if (pct >= 100) { pct = 100; clearInterval(pctInterval); }
+    pctEl.textContent = Math.floor(pct) + '%';
+  }, 500);
+
+  // Random screen shake
+  setInterval(() => {
+    if (Math.random() < 0.15) {
+      document.body.style.transform = `translate(${(Math.random()-0.5)*6}px, ${(Math.random()-0.5)*4}px)`;
+      setTimeout(() => document.body.style.transform = '', 80);
+    }
+  }, 300);
+</script>
+</body>
+</html>
