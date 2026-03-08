@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hardcore World — The Squad</title>
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=UnifrakturMaguntia&family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dirt: #8B6340;
+    --grass: #5D8731;
+    --stone: #9A9A9A;
+    --obsidian: #1A1020;
+    --lava: #FF6A00;
+    --gold: #FFD700;
+    --diamond: #4BFFFE;
+    --netherite: #403040;
+    --heart: #FF1744;
+    --dead: #555;
+    --bg: #0D0B0F;
+    --parchment: #F0E0C0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    min-height: 100vh;
+    font-family: 'Cinzel', serif;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Pixel grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Animated lava bg glow */
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(255,80,0,0.15) 0%, transparent 70%);
+    animation: lavaGlow 4s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes lavaGlow {
+    from { opacity: 0.5; transform: translateX(-50%) scale(1); }
+    to { opacity: 1; transform: translateX(-50%) scale(1.1); }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .skull-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-size: 28px;
+    animation: skulls 3s ease-in-out infinite;
+  }
+
+  @keyframes skulls {
+    0%, 100% { letter-spacing: 12px; }
+    50% { letter-spacing: 20px; }
+  }
+
+  .title-main {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2.2rem, 6vw, 4.5rem);
+    font-weight: 700;
+    color: #fff;
+    text-shadow:
+      0 0 30px rgba(255,80,0,0.8),
+      0 0 60px rgba(255,40,0,0.4),
+      2px 2px 0 #000;
+    letter-spacing: 4px;
+    line-height: 1.1;
+  }
+
+  .title-sub {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: #FF6A00;
+    letter-spacing: 6px;
+    margin-top: 10px;
+    text-shadow: 0 0 15px rgba(255,100,0,0.6);
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px auto;
+    max-width: 500px;
+  }
+
+  .divider-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #FF6A00, transparent);
+  }
+
+  .divider-icon { font-size: 20px; }
+
+  /* ── WORLD INFO BAR ── */
+  .world-bar {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,106,0,0.3);
+    border-radius: 4px;
+    padding: 16px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 48px;
+    animation: fadeDown 0.8s 0.2s ease both;
+  }
+
+  .world-stat {
+    text-align: center;
+  }
+
+  .world-stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .world-stat-value {
+    font-size: 1.1rem;
+    color: var(--gold);
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255,215,0,0.5);
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,23,68,0.15);
+    border: 1px solid rgba(255,23,68,0.5);
+    border-radius: 3px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    color: var(--heart);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(255,23,68,0); }
+    50% { box-shadow: 0 0 12px rgba(255,23,68,0.4); }
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--heart);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* ── PLAYER GRID ── */
+  .players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    margin-bottom: 60px;
+  }
+
+  .player-card {
+    position: relative;
+    background: linear-gradient(160deg, #1a1520 0%, #120e18 100%);
+    border: 2px solid rgba(255,106,0,0.25);
+    border-radius: 4px;
+    padding: 28px 22px;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    animation: fadeUp 0.7s ease both;
+    cursor: pointer;
+    overflow: hidden;
+  }
+
+  .player-card:nth-child(1) { animation-delay: 0.1s; }
+  .player-card:nth-child(2) { animation-delay: 0.2s; }
+  .player-card:nth-child(3) { animation-delay: 0.3s; }
+  .player-card:nth-child(4) { animation-delay: 0.4s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .player-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--card-accent, #FF6A00), transparent);
+    opacity: 0.8;
+  }
+
+  .player-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255,106,0,0.6);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(255,80,0,0.15);
+  }
+
+  .player-card.dead {
+    opacity: 0.55;
+    filter: grayscale(0.8);
+    border-color: rgba(100,100,100,0.3);
+  }
+
+  .player-card.dead::before {
+    background: linear-gradient(90deg, transparent, #555, transparent);
+  }
+
+  /* Rank badge */
+  .rank-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.35);
+    color: var(--gold);
+  }
+
+  /* Minecraft skin placeholder */
+  .skin-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .skin-figure {
+    position: relative;
+    width: 56px;
+    image-rendering: pixelated;
+  }
+
+  .pixel-char {
+    font-size: 52px;
+    line-height: 1;
+    display: block;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+    transition: transform 0.3s ease;
+  }
+
+  .player-card:hover .pixel-char { transform: scale(1.15) rotate(-3deg); }
+
+  /* Player info */
+  .player-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  .player-title {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.78rem;
+    color: #888;
+    text-align: center;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  /* Hearts */
+  .hearts-section {
+    margin-bottom: 18px;
+  }
+
+  .hearts-label {
+    font-size: 0.55rem;
+    letter-spacing: 3px;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .hearts-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+
+  .heart {
+    font-size: 14px;
+    transition: transform 0.2s ease;
+    animation: heartbeat 1.8s ease-in-out infinite;
+  }
+
+  .heart:hover { transform: scale(1.4); }
+
+  @keyframes heartbeat {
+    0%,100%{transform:scale(1)} 14%{transform:scale(1.15)} 28%{transform:scale(1)} 42%{transform:scale(1.08)} 70%{transform:scale(1)}
+  }
+
+  .heart.empty { opacity: 0.18; filter: grayscale(1); }
+  .heart.half { opacity: 0.55; }
+
+  /* XP Bar */
+  .xp-section { margin-bottom: 18px; }
+
+  .xp-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    color: #666;
+    margin-bottom: 6px;
+  }
+
+  .xp-bar-bg {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7CFC00, #ADFF2F);
+    border-radius: 2px;
+    transition: width 1s ease 0.5s;
+    box-shadow: 0 0 8px rgba(124,252,0,0.6);
+  }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .stat-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 3px;
+    padding: 8px 10px;
+  }
+
+  .stat-chip-icon { font-size: 14px; margin-bottom: 3px; display: block; }
+  .stat-chip-val { font-size: 0.9rem; color: #ddd; font-weight: 700; display: block; }
+  .stat-chip-lbl { font-size: 0.5rem; letter-spacing: 2px; color: #555; display: block; }
+
+  /* Achievement */
+  .achievement {
+    background: rgba(255,215,0,0.07);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 3px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ach-icon { font-size: 16px; }
+  .ach-text { font-size: 0.65rem; letter-spacing: 1px; color: #aaa; }
+  .ach-name { color: var(--gold); font-weight: 700; font-size: 0.72rem; }
+
+  /* Dead overlay */
+  .dead-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(1px);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    border-radius: 4px;
+  }
+
+  .player-card.dead .dead-overlay { display: flex; }
+
+  .dead-text {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.4rem;
+    color: var(--heart);
+    text-shadow: 0 0 20px rgba(255,23,68,0.8);
+    letter-spacing: 3px;
+  }
+
+  .dead-cause {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: #888;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  /* ── EVENTS LOG ── */
+  .section-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.3rem;
+    color: var(--gold);
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,215,0,0.4), transparent);
+  }
+
+  .events-log {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 48px;
+    max-height: 320px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,106,0,0.4) transparent;
+    animation: fadeUp 0.8s 0.5s ease both;
+  }
+
+  .event-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    animation: slideIn 0.4s ease both;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .event-item:last-child { border-bottom: none; }
+
+  .event-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .event-body { flex: 1; }
+
+  .event-text {
+    font-family: 'IM Fell English', serif;
+    font-size: 0.9rem;
+    color: #ccc;
+    line-height: 1.5;
+  }
+
+  .event-text strong { color: #fff; }
+  .event-text .highlight { color: var(--diamond); }
+
+  .event-time {
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    color: #555;
+    margin-top: 3px;
+  }
+
+  .event-type-death .event-text { color: #FF6B6B; }
+  .event-type-achievement .event-text strong { color: var(--gold); }
+
+  /* ── OBJECTIVES ── */
+  .objectives {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    animation: fadeUp 0.8s 0.6s ease both;
+  }
+
+  .objective {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    transition: border-color 0.3s;
+  }
+
+  .objective:hover { border-color: rgba(255,215,0,0.3); }
+
+  .objective.done {
+    border-color: rgba(93,135,49,0.5);
+    background: rgba(93,135,49,0.06);
+  }
+
+  .obj-icon { font-size: 22px; flex-shrink: 0; }
+  .obj-name { font-size: 0.75rem; letter-spacing: 1px; color: #bbb; margin-bottom: 3px; }
+  .obj-status { font-size: 0.6rem; letter-spacing: 2px; }
+  .objective.done .obj-status { color: var(--grass); }
+  .objective:not(.done) .obj-status { color: #666; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 60px;
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    color: #444;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 32px;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+
+  .btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    padding: 10px 20px;
+    border-radius: 3px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    background: transparent;
+  }
+
+  .btn-danger {
+    border-color: rgba(255,23,68,0.5);
+    color: var(--heart);
+  }
+
+  .btn-danger:hover {
+    background: rgba(255,23,68,0.15);
+    box-shadow: 0 0 15px rgba(255,23,68,0.3);
+  }
+
+  .btn-primary {
+    border-color: rgba(255,215,0,0.5);
+    color: var(--gold);
+  }
+
+  .btn-primary:hover {
+    background: rgba(255,215,0,0.1);
+    box-shadow: 0 0 15px rgba(255,215,0,0.3);
+  }
+
+  /* Day counter */
+  .day-counter {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid rgba(255,106,0,0.4);
+    border-radius: 4px;
+    padding: 10px 18px;
+    text-align: center;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+  }
+
+  .day-num {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.6rem;
+    color: var(--gold);
+    display: block;
+    text-shadow: 0 0 10px rgba(255,215,0,0.5);
+  }
+
+  .day-lbl {
+    font-size: 0.5rem;
+    letter-spacing: 3px;
+    color: #666;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: linear-gradient(160deg, #1a1520, #100c15);
+    border: 2px solid rgba(255,106,0,0.4);
+    border-radius: 6px;
+    padding: 36px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    animation: modalPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  @keyframes modalPop {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .modal h2 {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--heart);
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px rgba(255,23,68,0.5);
+  }
+
+  .modal p {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    color: #888;
+    margin-bottom: 24px;
+    font-size: 0.95rem;
+  }
+
+  .modal-buttons { display: flex; gap: 12px; justify-content: center; }
+
+  @media (max-width: 600px) {
+    .world-bar { flex-direction: column; text-align: center; }
+    .day-counter { position: static; margin-bottom: 20px; display: inline-block; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Day Counter -->
+<div class="day-counter">
+  <span class="day-num" id="dayNum">1</span>
+  <span class="day-lbl">DAYS SURVIVED</span>
+</div>
+
+<div class="container">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="skull-row">💀 ☠️ 💀 ☠️ 💀</div>
+    <h1 class="title-main">HARDCORE</h1>
+    <div class="title-sub">☠ ONE LIFE. ONE WORLD. FOUR LEGENDS ☠</div>
+    <div class="divider">
+      <div class="divider-line"></div>
+      <div class="divider-icon">🔥</div>
+      <div class="divider-line"></div>
+    </div>
+  </header>
+
+  <!-- World Bar -->
+  <div class="world-bar">
+    <div class="world-stat">
+      <div class="world-stat-label">World Seed</div>
+      <div class="world-stat-value">#GangHC_01</div>
+    </div>
+    <div class="world-stat">
+      <div class="world-stat-label">Difficulty</div>
+      <div class="world-stat-value" style="color: var(--heart);">☠ HARDCORE</div>
+    </div>
+    <div class="world-stat">
+      <div class="world-stat-label">Squad Status</div>
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        ALIVE
+      </div>
+    </div>
+    <div class="world-stat">
+      <div class="world-stat-label">Deaths</div>
+      <div class="world-stat-value" id="deathCounter">0</div>
+    </div>
+    <div class="world-stat">
+      <div class="world-stat-label">Season</div>
+      <div class="world-stat-value">I</div>
+    </div>
+  </div>
+
+  <!-- Player Grid -->
+  <div class="players-grid" id="playersGrid">
+
+    <!-- SPRIZEN -->
+    <div class="player-card" id="card-0" style="--card-accent: #4BFFFE;" onclick="selectPlayer(0)">
+      <div class="rank-badge">⚔ WARRIOR</div>
+      <div class="skin-area">
+        <div class="skin-figure">
+          <span class="pixel-char">🧙</span>
+        </div>
+      </div>
+      <div class="player-name">Sprizen</div>
+      <div class="player-title">The Strategist</div>
+
+      <div class="hearts-section">
+        <div class="hearts-label">HEALTH</div>
+        <div class="hearts-row" id="hearts-0"></div>
+      </div>
+
+      <div class="xp-section">
+        <div class="xp-label"><span>EXPERIENCE</span><span id="xp-label-0">Lv.1</span></div>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-0" style="width:0%"></div></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-chip">
+          <span class="stat-chip-icon">⚔️</span>
+          <span class="stat-chip-val" id="kills-0">0</span>
+          <span class="stat-chip-lbl">KILLS</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip-icon">🪙</span>
+          <span class="stat-chip-val" id="loot-0">0</span>
+          <span class="stat-chip-lbl">LOOT</span>
+        </div>
+      </div>
+
+      <div class="achievement">
+        <div class="ach-icon">🏆</div>
+        <div>
+          <div class="ach-name">First Night Survivor</div>
+          <div class="ach-text">Made it through the dark</div>
+        </div>
+      </div>
+
+      <div class="dead-overlay">
+        <div style="font-size:48px">💀</div>
+        <div class="dead-text">ELIMINATED</div>
+        <div class="dead-cause" id="dead-cause-0">Fell into the void</div>
+      </div>
+    </div>
+
+    <!-- JABA -->
+    <div class="player-card" id="card-1" style="--card-accent: #FFD700;" onclick="selectPlayer(1)">
+      <div class="rank-badge">🛡 GUARDIAN</div>
+      <div class="skin-area">
+        <div class="skin-figure">
+          <span class="pixel-char">🧝</span>
+        </div>
+      </div>
+      <div class="player-name">Jaba</div>
+      <div class="player-title">The Iron Wall</div>
+
+      <div class="hearts-section">
+        <div class="hearts-label">HEALTH</div>
+        <div class="hearts-row" id="hearts-1"></div>
+      </div>
+
+      <div class="xp-section">
+        <div class="xp-label"><span>EXPERIENCE</span><span id="xp-label-1">Lv.1</span></div>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-1" style="width:0%"></div></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-chip">
+          <span class="stat-chip-icon">⚔️</span>
+          <span class="stat-chip-val" id="kills-1">0</span>
+          <span class="stat-chip-lbl">KILLS</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip-icon">🪙</span>
+          <span class="stat-chip-val" id="loot-1">0</span>
+          <span class="stat-chip-lbl">LOOT</span>
+        </div>
+      </div>
+
+      <div class="achievement">
+        <div class="ach-icon">🛡️</div>
+        <div>
+          <div class="ach-name">Stone Cold</div>
+          <div class="ach-text">First set of stone tools</div>
+        </div>
+      </div>
+
+      <div class="dead-overlay">
+        <div style="font-size:48px">💀</div>
+        <div class="dead-text">ELIMINATED</div>
+        <div class="dead-cause" id="dead-cause-1">Fell into the void</div>
+      </div>
+    </div>
+
+    <!-- PIYUSH -->
+    <div class="player-card" id="card-2" style="--card-accent: #7CFC00;" onclick="selectPlayer(2)">
+      <div class="rank-badge">🏹 RANGER</div>
+      <div class="skin-area">
+        <div class="skin-figure">
+          <span class="pixel-char">🧑‍🌾</span>
+        </div>
+      </div>
+      <div class="player-name">Piyush</div>
+      <div class="player-title">The Resource King</div>
+
+      <div class="hearts-section">
+        <div class="hearts-label">HEALTH</div>
+        <div class="hearts-row" id="hearts-2"></div>
+      </div>
+
+      <div class="xp-section">
+        <div class="xp-label"><span>EXPERIENCE</span><span id="xp-label-2">Lv.1</span></div>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-2" style="width:0%"></div></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-chip">
+          <span class="stat-chip-icon">⚔️</span>
+          <span class="stat-chip-val" id="kills-2">0</span>
+          <span class="stat-chip-lbl">KILLS</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip-icon">🪙</span>
+          <span class="stat-chip-val" id="loot-2">0</span>
+          <span class="stat-chip-lbl">LOOT</span>
+        </div>
+      </div>
+
+      <div class="achievement">
+        <div class="ach-icon">⛏️</div>
+        <div>
+          <div class="ach-name">Deep Miner</div>
+          <div class="ach-text">Dug to Y=-58</div>
+        </div>
+      </div>
+
+      <div class="dead-overlay">
+        <div style="font-size:48px">💀</div>
+        <div class="dead-text">ELIMINATED</div>
+        <div class="dead-cause" id="dead-cause-2">Fell into the void</div>
+      </div>
+    </div>
+
+    <!-- GOKUL -->
+    <div class="player-card" id="card-3" style="--card-accent: #FF6A00;" onclick="selectPlayer(3)">
+      <div class="rank-badge">🔥 BERSERKER</div>
+      <div class="skin-area">
+        <div class="skin-figure">
+          <span class="pixel-char">🧑‍🔬</span>
+        </div>
+      </div>
+      <div class="player-name">Gokul</div>
+      <div class="player-title">The Chaos Agent</div>
+
+      <div class="hearts-section">
+        <div class="hearts-label">HEALTH</div>
+        <div class="hearts-row" id="hearts-3"></div>
+      </div>
+
+      <div class="xp-section">
+        <div class="xp-label"><span>EXPERIENCE</span><span id="xp-label-3">Lv.1</span></div>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-3" style="width:0%"></div></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-chip">
+          <span class="stat-chip-icon">⚔️</span>
+          <span class="stat-chip-val" id="kills-3">0</span>
+          <span class="stat-chip-lbl">KILLS</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-chip-icon">🪙</span>
+          <span class="stat-chip-val" id="loot-3">0</span>
+          <span class="stat-chip-lbl">LOOT</span>
+        </div>
+      </div>
+
+      <div class="achievement">
+        <div class="ach-icon">🔥</div>
+        <div>
+          <div class="ach-name">Blazing Start</div>
+          <div class="ach-text">First Nether portal</div>
+        </div>
+      </div>
+
+      <div class="dead-overlay">
+        <div style="font-size:48px">💀</div>
+        <div class="dead-text">ELIMINATED</div>
+        <div class="dead-cause" id="dead-cause-3">Fell into the void</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn btn-primary" onclick="addKill()">⚔️ Add Kill</button>
+    <button class="btn btn-primary" onclick="addLoot()">💎 Found Loot</button>
+    <button class="btn btn-primary" onclick="gainXP()">⭐ Gain XP</button>
+    <button class="btn btn-danger" onclick="loseHeart()">💔 Lost Heart</button>
+    <button class="btn btn-danger" onclick="killPlayer()">☠️ Player Died</button>
+    <button class="btn btn-primary" onclick="nextDay()">🌅 Next Day</button>
+  </div>
+
+  <!-- Events Log -->
+  <div class="section-title">📜 Chronicle of Events</div>
+  <div class="events-log" id="eventsLog">
+    <div class="event-item">
+      <div class="event-icon">🌅</div>
+      <div class="event-body">
+        <div class="event-text"><strong>Day 1 begins.</strong> The squad spawns into a world of unknown dangers. <span class="highlight">May fortune favour the brave.</span></div>
+        <div class="event-time">DAY 1 · THE BEGINNING</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Objectives -->
+  <div class="section-title">🎯 Quest Board</div>
+  <div class="objectives">
+    <div class="objective" id="obj-0">
+      <div class="obj-icon">🏠</div>
+      <div>
+        <div class="obj-name">Build a Base</div>
+        <div class="obj-status">PENDING</div>
+      </div>
+    </div>
+    <div class="objective" id="obj-1">
+      <div class="obj-icon">💎</div>
+      <div>
+        <div class="obj-name">Find Diamonds</div>
+        <div class="obj-status">PENDING</div>
+      </div>
+    </div>
+    <div class="objective" id="obj-2">
+      <div class="obj-icon">🌋</div>
+      <div>
+        <div class="obj-name">Enter the Nether</div>
+        <div class="obj-status">PENDING</div>
+      </div>
+    </div>
+    <div class="objective" id="obj-3">
+      <div class="obj-icon">🏰</div>
+      <div>
+        <div class="obj-name">Find Stronghold</div>
+        <div class="obj-status">PENDING</div>
+      </div>
+    </div>
+    <div class="objective" id="obj-4">
+      <div class="obj-icon">🐉</div>
+      <div>
+        <div class="obj-name">Slay the Dragon</div>
+        <div class="obj-status">PENDING</div>
+      </div>
+    </div>
+    <div class="objective" id="obj-5">
+      <div class="obj-icon">⭐</div>
+      <div>
+        <div class="obj-name">Reach the End</div>
+        <div class="obj-status">PENDING</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    "In this world, death is permanent. Play wisely."
+    <br>— The Hardcore Oath
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>☠️ PLAYER FELL</h2>
+    <p id="modal-text">Are you sure this player has died?</p>
+    <div class="modal-buttons">
+      <button class="btn btn-danger" onclick="confirmDeath()">Confirm Death</button>
+      <button class="btn btn-primary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const players = [
+    { name: 'Sprizen', hearts: 10, maxHearts: 10, xp: 0, level: 1, kills: 0, loot: 0, alive: true, deathCause: '' },
+    { name: 'Jaba',    hearts: 10, maxHearts: 10, xp: 0, level: 1, kills: 0, loot: 0, alive: true, deathCause: '' },
+    { name: 'Piyush',  hearts: 10, maxHearts: 10, xp: 0, level: 1, kills: 0, loot: 0, alive: true, deathCause: '' },
+    { name: 'Gokul',   hearts: 10, maxHearts: 10, xp: 0, level: 1, kills: 0, loot: 0, alive: true, deathCause: '' },
+  ];
+
+  let selectedPlayer = 0;
+  let day = 1;
+  let deathCount = 0;
+  let pendingDeathPlayer = -1;
+
+  const deathCauses = [
+    'Killed by a Creeper', 'Fell into lava', 'Shot by a Skeleton',
+    'Suffocated in a wall', 'Drowned', 'Blown up by TNT',
+    'Slain by a Zombie', 'Fell from high up', 'Starved to death',
+    'Blasted by a Ghast', 'Struck by lightning', 'Poisoned by a Spider'
+  ];
+
+  function renderHearts(i) {
+    const p = players[i];
+    const container = document.getElementById(`hearts-${i}`);
+    container.innerHTML = '';
+    for (let h = 0; h < p.maxHearts; h++) {
+      const heart = document.createElement('span');
+      heart.className = 'heart' + (h >= p.hearts ? ' empty' : '');
+      heart.textContent = h < p.hearts ? '❤️' : '🖤';
+      container.appendChild(heart);
+    }
+  }
+
+  function renderXP(i) {
+    const p = players[i];
+    const pct = (p.xp % 100);
+    document.getElementById(`xp-${i}`).style.width = pct + '%';
+    document.getElementById(`xp-label-${i}`).textContent = 'Lv.' + p.level;
+  }
+
+  function renderStats(i) {
+    document.getElementById(`kills-${i}`).textContent = players[i].kills;
+    document.getElementById(`loot-${i}`).textContent = players[i].loot;
+  }
+
+  function renderAll() {
+    players.forEach((p, i) => {
+      renderHearts(i);
+      renderXP(i);
+      renderStats(i);
+      const card = document.getElementById(`card-${i}`);
+      if (!p.alive) {
+        card.classList.add('dead');
+        document.getElementById(`dead-cause-${i}`).textContent = p.deathCause;
+      } else {
+        card.classList.remove('dead');
+      }
+    });
+    document.getElementById('dayNum').textContent = day;
+    document.getElementById('deathCounter').textContent = deathCount;
+    updateSquadStatus();
+  }
+
+  function highlightSelected() {
+    document.querySelectorAll('.player-card').forEach((c, i) => {
+      c.style.outline = i === selectedPlayer ? '2px solid rgba(255,215,0,0.6)' : 'none';
+    });
+  }
+
+  function selectPlayer(i) {
+    if (!players[i].alive) return;
+    selectedPlayer = i;
+    highlightSelected();
+    addEvent('🎯', `<strong>${players[i].name}</strong> is now selected.`, 'info');
+  }
+
+  function getAlive() { return players.filter(p => p.alive); }
+
+  function addEvent(icon, text, type = 'info') {
+    const log = document.getElementById('eventsLog');
+    const item = document.createElement('div');
+    item.className = `event-item event-type-${type}`;
+    item.innerHTML = `
+      <div class="event-icon">${icon}</div>
+      <div class="event-body">
+        <div class="event-text">${text}</div>
+        <div class="event-time">DAY ${day}</div>
+      </div>`;
+    log.insertBefore(item, log.firstChild);
+  }
+
+  function addKill() {
+    const p = players[selectedPlayer];
+    if (!p.alive) return;
+    p.kills++;
+    p.xp += 15;
+    if (p.xp >= 100 * p.level) p.level++;
+    renderStats(selectedPlayer);
+    renderXP(selectedPlayer);
+    addEvent('⚔️', `<strong>${p.name}</strong> slew an enemy! Kills: <span class="highlight">${p.kills}</span>`, 'achievement');
+  }
+
+  function addLoot() {
+    const p = players[selectedPlayer];
+    if (!p.alive) return;
+    p.loot++;
+    p.xp += 10;
+    if (p.xp >= 100 * p.level) p.level++;
+    renderStats(selectedPlayer);
+    renderXP(selectedPlayer);
+    addEvent('💎', `<strong>${p.name}</strong> found precious loot! Total: <span class="highlight">${p.loot}</span>`, 'achievement');
+  }
+
+  function gainXP() {
+    const p = players[selectedPlayer];
+    if (!p.alive) return;
+    p.xp += 25;
+    if (p.xp >= 100 * p.level) { p.level++; addEvent('⭐', `<strong>${p.name}</strong> reached <span class="highlight">Level ${p.level}!</span>`, 'achievement'); }
+    renderXP(selectedPlayer);
+    addEvent('✨', `<strong>${p.name}</strong> gained experience!`, 'info');
+  }
+
+  function loseHeart() {
+    const p = players[selectedPlayer];
+    if (!p.alive || p.hearts <= 0) return;
+    p.hearts--;
+    renderHearts(selectedPlayer);
+    if (p.hearts <= 3) {
+      addEvent('💔', `<strong>${p.name}</strong> is critically low — only <span class="highlight">${p.hearts} hearts</span> remaining!`, 'death');
+    } else {
+      addEvent('💔', `<strong>${p.name}</strong> took damage. <span class="highlight">${p.hearts}/${p.maxHearts}</span> hearts left.`, 'info');
+    }
+    if (p.hearts === 0) { pendingDeathPlayer = selectedPlayer; confirmDeath(); }
+  }
+
+  function killPlayer() {
+    if (!players[selectedPlayer].alive) return;
+    pendingDeathPlayer = selectedPlayer;
+    document.getElementById('modal-text').textContent = `Is ${players[selectedPlayer].name} really dead?`;
+    document.getElementById('modal').classList.add('active');
+  }
+
+  function confirmDeath() {
+    const idx = pendingDeathPlayer >= 0 ? pendingDeathPlayer : selectedPlayer;
+    const p = players[idx];
+    p.alive = false;
+    p.hearts = 0;
+    p.deathCause = deathCauses[Math.floor(Math.random() * deathCauses.length)];
+    deathCount++;
+    closeModal();
+    renderAll();
+    addEvent('☠️', `<strong>${p.name}</strong> has perished. <span class="highlight">${p.deathCause}</span>`, 'death');
+    pendingDeathPlayer = -1;
+    // pick next alive
+    const aliveIdx = players.findIndex(pl => pl.alive);
+    if (aliveIdx >= 0) { selectedPlayer = aliveIdx; highlightSelected(); }
+    updateSquadStatus();
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+  }
+
+  function nextDay() {
+    day++;
+    document.getElementById('dayNum').textContent = day;
+    addEvent('🌅', `<strong>Day ${day} begins.</strong> The survivors press on.`, 'info');
+    // complete random objective for fun
+    const objs = document.querySelectorAll('.objective:not(.done)');
+    if (day === 3 && objs[0]) completeObj(0, 'Base has been established!');
+    if (day === 5 && objs[1]) completeObj(1, 'Diamonds have been found!');
+  }
+
+  function completeObj(i, msg) {
+    const obj = document.getElementById(`obj-${i}`);
+    if (!obj) return;
+    obj.classList.add('done');
+    obj.querySelector('.obj-status').textContent = '✓ COMPLETE';
+    addEvent('🏆', `Quest complete: <span class="highlight">${msg}</span>`, 'achievement');
+  }
+
+  function updateSquadStatus() {
+    const alive = getAlive().length;
+    const badge = document.querySelector('.status-badge');
+    if (alive === 0) {
+      badge.textContent = '☠ WORLD OVER';
+      badge.style.color = '#555';
+      badge.style.borderColor = '#333';
+      badge.style.animation = 'none';
+    } else if (alive <= 1) {
+      badge.innerHTML = '<div class="status-dot"></div> LAST STAND';
+    } else {
+      badge.innerHTML = '<div class="status-dot"></div> ALIVE';
+    }
+  }
+
+  // Init
+  setTimeout(() => {
+    renderAll();
+    highlightSelected();
+    setTimeout(() => {
+      document.querySelectorAll('.xp-bar-fill').forEach(b => b.style.width = '0%');
+    }, 100);
+  }, 300);
+</script>
+</body>
+</html>
