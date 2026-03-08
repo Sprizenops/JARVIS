@@ -4,1227 +4,496 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hardcore World — The Squad</title>
-<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=UnifrakturMaguntia&family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --dirt: #8B6340;
-    --grass: #5D8731;
-    --stone: #9A9A9A;
-    --obsidian: #1A1020;
-    --lava: #FF6A00;
-    --gold: #FFD700;
-    --diamond: #4BFFFE;
-    --netherite: #403040;
-    --heart: #FF1744;
-    --dead: #555;
-    --bg: #0D0B0F;
-    --parchment: #F0E0C0;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    min-height: 100vh;
-    font-family: 'Cinzel', serif;
-    overflow-x: hidden;
-    position: relative;
-  }
-
-  /* Pixel grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-    background-size: 32px 32px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Animated lava bg glow */
-  body::after {
-    content: '';
-    position: fixed;
-    bottom: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 900px;
-    height: 400px;
-    background: radial-gradient(ellipse, rgba(255,80,0,0.15) 0%, transparent 70%);
-    animation: lavaGlow 4s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  @keyframes lavaGlow {
-    from { opacity: 0.5; transform: translateX(-50%) scale(1); }
-    to { opacity: 1; transform: translateX(-50%) scale(1.1); }
-  }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 40px 20px 80px;
-  }
-
-  /* ── HEADER ── */
-  .header {
-    text-align: center;
-    margin-bottom: 60px;
-    animation: fadeDown 0.8s ease both;
-  }
-
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-30px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .skull-row {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    font-size: 28px;
-    animation: skulls 3s ease-in-out infinite;
-  }
-
-  @keyframes skulls {
-    0%, 100% { letter-spacing: 12px; }
-    50% { letter-spacing: 20px; }
-  }
-
-  .title-main {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(2.2rem, 6vw, 4.5rem);
-    font-weight: 700;
-    color: #fff;
-    text-shadow:
-      0 0 30px rgba(255,80,0,0.8),
-      0 0 60px rgba(255,40,0,0.4),
-      2px 2px 0 #000;
-    letter-spacing: 4px;
-    line-height: 1.1;
-  }
-
-  .title-sub {
-    font-family: 'IM Fell English', serif;
-    font-style: italic;
-    font-size: 1.1rem;
-    color: #FF6A00;
-    letter-spacing: 6px;
-    margin-top: 10px;
-    text-shadow: 0 0 15px rgba(255,100,0,0.6);
-  }
-
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin: 24px auto;
-    max-width: 500px;
-  }
-
-  .divider-line {
-    flex: 1;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #FF6A00, transparent);
-  }
-
-  .divider-icon { font-size: 20px; }
-
-  /* ── WORLD INFO BAR ── */
-  .world-bar {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,106,0,0.3);
-    border-radius: 4px;
-    padding: 16px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 48px;
-    animation: fadeDown 0.8s 0.2s ease both;
-  }
-
-  .world-stat {
-    text-align: center;
-  }
-
-  .world-stat-label {
-    font-size: 0.6rem;
-    letter-spacing: 3px;
-    color: #888;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-
-  .world-stat-value {
-    font-size: 1.1rem;
-    color: var(--gold);
-    font-weight: 700;
-    text-shadow: 0 0 10px rgba(255,215,0,0.5);
-  }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255,23,68,0.15);
-    border: 1px solid rgba(255,23,68,0.5);
-    border-radius: 3px;
-    padding: 4px 12px;
-    font-size: 0.75rem;
-    letter-spacing: 3px;
-    color: var(--heart);
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 rgba(255,23,68,0); }
-    50% { box-shadow: 0 0 12px rgba(255,23,68,0.4); }
-  }
-
-  .status-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--heart);
-    animation: blink 1.2s ease-in-out infinite;
-  }
-
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-
-  /* ── PLAYER GRID ── */
-  .players-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 24px;
-    margin-bottom: 60px;
-  }
-
-  .player-card {
-    position: relative;
-    background: linear-gradient(160deg, #1a1520 0%, #120e18 100%);
-    border: 2px solid rgba(255,106,0,0.25);
-    border-radius: 4px;
-    padding: 28px 22px;
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    animation: fadeUp 0.7s ease both;
-    cursor: pointer;
-    overflow: hidden;
-  }
-
-  .player-card:nth-child(1) { animation-delay: 0.1s; }
-  .player-card:nth-child(2) { animation-delay: 0.2s; }
-  .player-card:nth-child(3) { animation-delay: 0.3s; }
-  .player-card:nth-child(4) { animation-delay: 0.4s; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .player-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--card-accent, #FF6A00), transparent);
-    opacity: 0.8;
-  }
-
-  .player-card:hover {
-    transform: translateY(-6px);
-    border-color: rgba(255,106,0,0.6);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(255,80,0,0.15);
-  }
-
-  .player-card.dead {
-    opacity: 0.55;
-    filter: grayscale(0.8);
-    border-color: rgba(100,100,100,0.3);
-  }
-
-  .player-card.dead::before {
-    background: linear-gradient(90deg, transparent, #555, transparent);
-  }
-
-  /* Rank badge */
-  .rank-badge {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    font-size: 0.55rem;
-    letter-spacing: 2px;
-    padding: 3px 8px;
-    border-radius: 2px;
-    background: rgba(255,215,0,0.1);
-    border: 1px solid rgba(255,215,0,0.35);
-    color: var(--gold);
-  }
-
-  /* Minecraft skin placeholder */
-  .skin-area {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-
-  .skin-figure {
-    position: relative;
-    width: 56px;
-    image-rendering: pixelated;
-  }
-
-  .pixel-char {
-    font-size: 52px;
-    line-height: 1;
-    display: block;
-    image-rendering: pixelated;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
-    transition: transform 0.3s ease;
-  }
-
-  .player-card:hover .pixel-char { transform: scale(1.15) rotate(-3deg); }
-
-  /* Player info */
-  .player-name {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #fff;
-    text-align: center;
-    margin-bottom: 6px;
-    letter-spacing: 1px;
-  }
-
-  .player-title {
-    font-family: 'IM Fell English', serif;
-    font-style: italic;
-    font-size: 0.78rem;
-    color: #888;
-    text-align: center;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-  }
-
-  /* Hearts */
-  .hearts-section {
-    margin-bottom: 18px;
-  }
-
-  .hearts-label {
-    font-size: 0.55rem;
-    letter-spacing: 3px;
-    color: #666;
-    margin-bottom: 8px;
-  }
-
-  .hearts-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-  }
-
-  .heart {
-    font-size: 14px;
-    transition: transform 0.2s ease;
-    animation: heartbeat 1.8s ease-in-out infinite;
-  }
-
-  .heart:hover { transform: scale(1.4); }
-
-  @keyframes heartbeat {
-    0%,100%{transform:scale(1)} 14%{transform:scale(1.15)} 28%{transform:scale(1)} 42%{transform:scale(1.08)} 70%{transform:scale(1)}
-  }
-
-  .heart.empty { opacity: 0.18; filter: grayscale(1); }
-  .heart.half { opacity: 0.55; }
-
-  /* XP Bar */
-  .xp-section { margin-bottom: 18px; }
-
-  .xp-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.55rem;
-    letter-spacing: 2px;
-    color: #666;
-    margin-bottom: 6px;
-  }
-
-  .xp-bar-bg {
-    height: 6px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .xp-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #7CFC00, #ADFF2F);
-    border-radius: 2px;
-    transition: width 1s ease 0.5s;
-    box-shadow: 0 0 8px rgba(124,252,0,0.6);
-  }
-
-  /* Stats grid */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 18px;
-  }
-
-  .stat-chip {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 3px;
-    padding: 8px 10px;
-  }
-
-  .stat-chip-icon { font-size: 14px; margin-bottom: 3px; display: block; }
-  .stat-chip-val { font-size: 0.9rem; color: #ddd; font-weight: 700; display: block; }
-  .stat-chip-lbl { font-size: 0.5rem; letter-spacing: 2px; color: #555; display: block; }
-
-  /* Achievement */
-  .achievement {
-    background: rgba(255,215,0,0.07);
-    border: 1px solid rgba(255,215,0,0.2);
-    border-radius: 3px;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .ach-icon { font-size: 16px; }
-  .ach-text { font-size: 0.65rem; letter-spacing: 1px; color: #aaa; }
-  .ach-name { color: var(--gold); font-weight: 700; font-size: 0.72rem; }
-
-  /* Dead overlay */
-  .dead-overlay {
-    display: none;
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(1px);
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 8px;
-    border-radius: 4px;
-  }
-
-  .player-card.dead .dead-overlay { display: flex; }
-
-  .dead-text {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 1.4rem;
-    color: var(--heart);
-    text-shadow: 0 0 20px rgba(255,23,68,0.8);
-    letter-spacing: 3px;
-  }
-
-  .dead-cause {
-    font-family: 'IM Fell English', serif;
-    font-style: italic;
-    font-size: 0.8rem;
-    color: #888;
-    text-align: center;
-    padding: 0 20px;
-  }
-
-  /* ── EVENTS LOG ── */
-  .section-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 1.3rem;
-    color: var(--gold);
-    letter-spacing: 3px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(255,215,0,0.4), transparent);
-  }
-
-  .events-log {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,215,0,0.15);
-    border-radius: 4px;
-    padding: 20px;
-    margin-bottom: 48px;
-    max-height: 320px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,106,0,0.4) transparent;
-    animation: fadeUp 0.8s 0.5s ease both;
-  }
-
-  .event-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    animation: slideIn 0.4s ease both;
-  }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-10px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-
-  .event-item:last-child { border-bottom: none; }
-
-  .event-icon {
-    font-size: 20px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  .event-body { flex: 1; }
-
-  .event-text {
-    font-family: 'IM Fell English', serif;
-    font-size: 0.9rem;
-    color: #ccc;
-    line-height: 1.5;
-  }
-
-  .event-text strong { color: #fff; }
-  .event-text .highlight { color: var(--diamond); }
-
-  .event-time {
-    font-size: 0.55rem;
-    letter-spacing: 2px;
-    color: #555;
-    margin-top: 3px;
-  }
-
-  .event-type-death .event-text { color: #FF6B6B; }
-  .event-type-achievement .event-text strong { color: var(--gold); }
-
-  /* ── OBJECTIVES ── */
-  .objectives {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
-    animation: fadeUp 0.8s 0.6s ease both;
-  }
-
-  .objective {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 4px;
-    padding: 16px;
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    transition: border-color 0.3s;
-  }
-
-  .objective:hover { border-color: rgba(255,215,0,0.3); }
-
-  .objective.done {
-    border-color: rgba(93,135,49,0.5);
-    background: rgba(93,135,49,0.06);
-  }
-
-  .obj-icon { font-size: 22px; flex-shrink: 0; }
-  .obj-name { font-size: 0.75rem; letter-spacing: 1px; color: #bbb; margin-bottom: 3px; }
-  .obj-status { font-size: 0.6rem; letter-spacing: 2px; }
-  .objective.done .obj-status { color: var(--grass); }
-  .objective:not(.done) .obj-status { color: #666; }
-
-  /* Footer */
-  .footer {
-    text-align: center;
-    margin-top: 60px;
-    font-family: 'IM Fell English', serif;
-    font-style: italic;
-    color: #444;
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-  }
-
-  /* Controls */
-  .controls {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 32px;
-    animation: fadeUp 0.8s 0.4s ease both;
-  }
-
-  .btn {
-    font-family: 'Cinzel', serif;
-    font-size: 0.65rem;
-    letter-spacing: 2px;
-    padding: 10px 20px;
-    border-radius: 3px;
-    border: 1px solid;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    background: transparent;
-  }
-
-  .btn-danger {
-    border-color: rgba(255,23,68,0.5);
-    color: var(--heart);
-  }
-
-  .btn-danger:hover {
-    background: rgba(255,23,68,0.15);
-    box-shadow: 0 0 15px rgba(255,23,68,0.3);
-  }
-
-  .btn-primary {
-    border-color: rgba(255,215,0,0.5);
-    color: var(--gold);
-  }
-
-  .btn-primary:hover {
-    background: rgba(255,215,0,0.1);
-    box-shadow: 0 0 15px rgba(255,215,0,0.3);
-  }
-
-  /* Day counter */
-  .day-counter {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(0,0,0,0.8);
-    border: 1px solid rgba(255,106,0,0.4);
-    border-radius: 4px;
-    padding: 10px 18px;
-    text-align: center;
-    z-index: 100;
-    backdrop-filter: blur(4px);
-  }
-
-  .day-num {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 1.6rem;
-    color: var(--gold);
-    display: block;
-    text-shadow: 0 0 10px rgba(255,215,0,0.5);
-  }
-
-  .day-lbl {
-    font-size: 0.5rem;
-    letter-spacing: 3px;
-    color: #666;
-  }
-
-  /* Modal */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-
-  .modal-overlay.active { display: flex; }
-
-  .modal {
-    background: linear-gradient(160deg, #1a1520, #100c15);
-    border: 2px solid rgba(255,106,0,0.4);
-    border-radius: 6px;
-    padding: 36px;
-    max-width: 420px;
-    width: 90%;
-    text-align: center;
-    animation: modalPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
-  }
-
-  @keyframes modalPop {
-    from { opacity: 0; transform: scale(0.8); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  .modal h2 {
-    font-family: 'Cinzel Decorative', serif;
-    color: var(--heart);
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    text-shadow: 0 0 20px rgba(255,23,68,0.5);
-  }
-
-  .modal p {
-    font-family: 'IM Fell English', serif;
-    font-style: italic;
-    color: #888;
-    margin-bottom: 24px;
-    font-size: 0.95rem;
-  }
-
-  .modal-buttons { display: flex; gap: 12px; justify-content: center; }
-
-  @media (max-width: 600px) {
-    .world-bar { flex-direction: column; text-align: center; }
-    .day-counter { position: static; margin-bottom: 20px; display: inline-block; }
-  }
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --mc-grass:#5D8731;--mc-dirt:#866043;--mc-stone:#7F7F7F;
+  --mc-gold:#FFD700;--mc-diamond:#4AF5F5;--mc-heart:#FF0000;
+  --mc-xp:#7CFC00;--mc-text:#FFFFFF;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;image-rendering:pixelated}
+
+body{
+  font-family:'Press Start 2P',monospace;
+  background:#000;min-height:100vh;color:var(--mc-text);
+  overflow-x:hidden;
+}
+
+/* ── BACKGROUND ── */
+.world-bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+.sky{position:absolute;inset:0;background:linear-gradient(180deg,#1B3A6B 0%,#2E5FA3 35%,#7EC8FF 75%,#B0D8FF 100%)}
+.stars{position:absolute;inset:0;background-image:
+  radial-gradient(1px 1px at 8% 10%,white,transparent),
+  radial-gradient(1px 1px at 20% 5%,white,transparent),
+  radial-gradient(1px 1px at 35% 18%,white,transparent),
+  radial-gradient(1px 1px at 55% 8%,white,transparent),
+  radial-gradient(2px 2px at 70% 4%,rgba(255,255,255,.8),transparent),
+  radial-gradient(1px 1px at 82% 14%,white,transparent),
+  radial-gradient(1px 1px at 92% 9%,white,transparent),
+  radial-gradient(2px 2px at 45% 2%,rgba(255,255,255,.7),transparent);opacity:.8}
+.moon{position:absolute;top:30px;right:100px;width:48px;height:48px;background:#E8E8D0;box-shadow:inset -10px -5px 0 #B8B890}
+
+/* Scrolling clouds */
+.clouds{position:absolute;top:50px;left:0;width:200%;height:48px;animation:scrollClouds 40s linear infinite}
+@keyframes scrollClouds{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.cloud{position:absolute;background:rgba(255,255,255,.88);height:32px}
+
+/* Scrolling terrain */
+.terrain{position:absolute;bottom:0;left:0;width:200%;display:flex;flex-direction:column;animation:scrollT 18s linear infinite}
+@keyframes scrollT{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.terrain-row{display:flex;width:100%}
+.block{flex-shrink:0;width:32px;height:32px}
+.b-grass{background:#5D8731;box-shadow:inset 2px 2px 0 #6FA33A,inset -2px -2px 0 #3D6020}
+.b-dirt{background:#866043;box-shadow:inset 2px 2px 0 #9A7050,inset -2px -2px 0 #6A4A30}
+.b-stone{background:#7F7F7F;box-shadow:inset 2px 2px 0 #999,inset -2px -2px 0 #5A5A5A}
+.b-wood{background:#A0742A;box-shadow:inset 2px 2px 0 #B8883A,inset -2px -2px 0 #785520}
+.b-leaves{background:#3A7D2C;box-shadow:inset 2px 2px 0 #4A9038,inset -2px -2px 0 #285020}
+
+/* ── LAYOUT ── */
+.container{position:relative;z-index:10;max-width:1140px;margin:0 auto;padding:16px 12px 80px}
+
+/* ── MC GUI PANEL ── */
+.mc-panel{
+  background:rgba(0,0,0,.85);
+  border:3px solid;border-color:#666 #222 #222 #666;
+  box-shadow:inset 1px 1px 0 #999,inset -1px -1px 0 #111,4px 4px 0 rgba(0,0,0,.4);
+  padding:14px;margin-bottom:10px;
+}
+.mc-divider{height:3px;background:linear-gradient(90deg,transparent,#555,#888,#555,transparent);border-top:1px solid #222;border-bottom:1px solid #777;margin:10px 0}
+
+/* ── HEADER ── */
+.header{text-align:center;padding:18px 14px;animation:fadeIn .5s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+.title-main{font-size:clamp(1rem,4vw,2rem);color:#FF3333;text-shadow:3px 3px 0 #660000;letter-spacing:3px;animation:flicker 4s ease-in-out infinite}
+@keyframes flicker{0%,88%,100%{text-shadow:3px 3px 0 #660000}94%{text-shadow:3px 3px 0 #AA0000,0 0 20px #FF0000}}
+.title-sub{font-size:.36rem;color:#AAAAAA;text-shadow:1px 1px 0 #000;letter-spacing:3px;margin-top:10px}
+
+/* ── STATUS BAR ── */
+.status-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 14px;animation:fadeIn .5s .1s ease both}
+.s-stat{text-align:center}
+.s-lbl{font-size:.32rem;color:#AAA;text-shadow:1px 1px 0 #000;letter-spacing:2px;margin-bottom:4px}
+.s-val{font-size:.6rem;color:var(--mc-gold);text-shadow:2px 2px 0 #664400}
+.s-val.red{color:#FF5555;text-shadow:2px 2px 0 #880000}
+.hc-badge{background:#AA0000;border:2px solid;border-color:#FF4444 #660000 #660000 #FF4444;padding:5px 10px;font-size:.4rem;color:var(--mc-gold);text-shadow:1px 1px 0 #000;animation:badgePulse 1.5s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 rgba(255,0,0,0)}50%{box-shadow:0 0 14px rgba(255,0,0,.6)}}
+
+/* ── PLAYER GRID ── */
+.players-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:8px;margin-bottom:10px}
+.player-card{
+  background:rgba(0,0,0,.78);border:3px solid;border-color:#666 #222 #222 #666;
+  box-shadow:inset 1px 1px 0 #999,inset -1px -1px 0 #111;
+  padding:13px;cursor:pointer;transition:border-color .1s;position:relative;
+  animation:fadeIn .5s ease both;
+}
+.player-card:nth-child(1){animation-delay:.05s}
+.player-card:nth-child(2){animation-delay:.1s}
+.player-card:nth-child(3){animation-delay:.15s}
+.player-card:nth-child(4){animation-delay:.2s}
+.player-card:hover{border-color:#EEE #888 #888 #EEE;box-shadow:inset 1px 1px 0 #FFF,inset -1px -1px 0 #555}
+.player-card.selected{border-color:var(--mc-gold) #AA8800 #AA8800 var(--mc-gold);box-shadow:inset 1px 1px 0 #FFE566,0 0 10px rgba(255,215,0,.35)}
+.player-card.dead{filter:grayscale(1) brightness(.45);cursor:default}
+.player-card.dead:hover{border-color:#666 #222 #222 #666;box-shadow:inset 1px 1px 0 #999}
+
+.class-tag{position:absolute;top:7px;right:7px;font-size:.27rem;background:#1A1A1A;border:1px solid #444;padding:2px 5px;color:#AAA;letter-spacing:1px}
+
+/* Pixel skin */
+.skin-wrap{display:flex;justify-content:center;margin-bottom:8px}
+.pixel-skin{width:48px;height:64px;position:relative}
+.px-head{width:32px;height:32px;position:absolute;left:8px;top:0;border:2px solid rgba(0,0,0,.3)}
+.px-body{width:24px;height:22px;position:absolute;left:12px;top:34px;border:2px solid rgba(0,0,0,.3)}
+.px-arm-l,.px-arm-r{width:8px;height:22px;position:absolute;top:34px;border:2px solid rgba(0,0,0,.3)}
+.px-arm-l{left:2px}.px-arm-r{right:2px}
+.px-leg-l,.px-leg-r{width:10px;height:18px;position:absolute;bottom:0;border:2px solid rgba(0,0,0,.3)}
+.px-leg-l{left:12px}.px-leg-r{right:12px}
+/* Eyes */
+.px-head::before,.px-head::after{content:'';position:absolute;width:6px;height:4px;background:#111;top:12px}
+.px-head::before{left:4px}.px-head::after{right:4px}
+/* Skins */
+.skin-s .px-head{background:#5C3A1E}.skin-s .px-body,.skin-s .px-arm-l,.skin-s .px-arm-r{background:#1E90FF}.skin-s .px-leg-l,.skin-s .px-leg-r{background:#2A2A9C}
+.skin-j .px-head{background:#4A2C0A}.skin-j .px-body,.skin-j .px-arm-l,.skin-j .px-arm-r{background:#228B22}.skin-j .px-leg-l,.skin-j .px-leg-r{background:#8B4513}
+.skin-p .px-head{background:#6B3A1F}.skin-p .px-body,.skin-p .px-arm-l,.skin-p .px-arm-r{background:#CC4400}.skin-p .px-leg-l,.skin-p .px-leg-r{background:#222}
+.skin-g .px-head{background:#3A2010}.skin-g .px-body,.skin-g .px-arm-l,.skin-g .px-arm-r{background:#7B2FBE}.skin-g .px-leg-l,.skin-g .px-leg-r{background:#111}
+.player-card:hover .pixel-skin{animation:bob .5s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+.player-name{font-size:.62rem;color:#FFF;text-shadow:2px 2px 0 #000;text-align:center;margin-bottom:2px;letter-spacing:1px}
+.player-title{font-size:.27rem;color:#AAA;text-shadow:1px 1px 0 #000;text-align:center;margin-bottom:10px;letter-spacing:2px}
+
+/* Hearts */
+.h-lbl{font-size:.27rem;color:#AAA;letter-spacing:2px;margin-bottom:4px}
+.hearts-row{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:8px}
+.hrt{font-size:12px;line-height:1;display:inline-block}
+.hrt.full{color:#FF0000;text-shadow:1px 1px 0 #660000;animation:hbeat 1.8s ease-in-out infinite}
+.hrt.empty{color:#2A2A2A}
+@keyframes hbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+
+/* XP */
+.xp-wrap{margin-bottom:8px}
+.xp-hdr{display:flex;justify-content:space-between;font-size:.27rem;color:var(--mc-xp);text-shadow:1px 1px 0 #000;margin-bottom:3px;letter-spacing:1px}
+.xp-bg{height:8px;background:#1A1A1A;border:2px solid;border-color:#222 #555 #555 #222;overflow:hidden}
+.xp-fill{height:100%;background:var(--mc-xp);box-shadow:inset 0 2px 0 rgba(255,255,255,.3);transition:width .5s steps(8);background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.15) 0,rgba(255,255,255,.15) 4px,transparent 4px,transparent 8px)}
+
+/* Stat slots */
+.stats-slots{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px}
+.stat-slot{background:#1A1A1A;border:2px solid;border-color:#222 #555 #555 #222;padding:5px 7px;display:flex;align-items:center;gap:5px}
+.si{font-size:13px}.sv{font-size:.52rem;color:#FFF;text-shadow:1px 1px 0 #000;display:block}.sl{font-size:.25rem;color:#777;letter-spacing:1px;display:block;margin-top:1px}
+
+/* Ach */
+.ach-tag{background:#1A1200;border:2px solid;border-color:#AA8800 #554400 #554400 #AA8800;padding:6px 8px;display:flex;align-items:center;gap:7px}
+.ai{font-size:13px}.an{font-size:.29rem;color:var(--mc-gold);text-shadow:1px 1px 0 #000;display:block;letter-spacing:1px}.ad{font-size:.24rem;color:#777;display:block;margin-top:2px}
+
+/* Dead overlay */
+.dead-screen{display:none;position:absolute;inset:0;background:rgba(120,0,0,.2);align-items:center;justify-content:center;flex-direction:column;gap:5px;z-index:5}
+.player-card.dead .dead-screen{display:flex}
+.dt{font-size:.7rem;color:#FF3333;text-shadow:2px 2px 0 #000;letter-spacing:2px}
+.dc{font-size:.27rem;color:#CCC;text-align:center;padding:0 8px;letter-spacing:1px;line-height:2}
+
+/* ── BUTTONS ── */
+.btn-group{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px;animation:fadeIn .5s .3s ease both}
+.mc-btn{font-family:'Press Start 2P',monospace;font-size:.35rem;letter-spacing:1px;padding:8px 13px;border:2px solid;cursor:pointer;text-shadow:1px 1px 0 #000;line-height:1.4;position:relative;top:0;transition:top .05s}
+.mc-btn:active{top:2px}
+.btn-g{background:#5A8A2A;border-color:#8AC050 #2A5010 #2A5010 #8AC050;color:#D8FFD0}
+.btn-g:hover{background:#6A9A3A}
+.btn-r{background:#8A1A1A;border-color:#CC4444 #440808 #440808 #CC4444;color:#FFD0D0}
+.btn-r:hover{background:#AA2A2A}
+.btn-y{background:#8A6A00;border-color:#FFD700 #4A3800 #4A3800 #FFD700;color:#FFF8C0}
+.btn-y:hover{background:#AA8800}
+.btn-b{background:#1A4A8A;border-color:#44AAFF #081844 #081844 #44AAFF;color:#C0E0FF}
+.btn-b:hover{background:#2A5A9A}
+
+/* ── CHAT ── */
+.chat-box{background:rgba(0,0,0,.9);border:3px solid;border-color:#444 #111 #111 #444;box-shadow:inset 1px 1px 0 #666;padding:10px;max-height:260px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#555 #111;animation:fadeIn .5s .4s ease both}
+.chat-box::-webkit-scrollbar{width:8px}.chat-box::-webkit-scrollbar-track{background:#111}.chat-box::-webkit-scrollbar-thumb{background:#555;border:1px solid #333}
+.chat-line{font-size:.3rem;line-height:2.2;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.04);animation:cslide .2s ease both}
+@keyframes cslide{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.cd{color:#AAAAAA}.cm{color:#FFF}.ck{color:#FF5555}.ca{color:#FFFF55}.cs{color:#55FF55}
+.section-hdr{font-size:.42rem;color:var(--mc-gold);text-shadow:2px 2px 0 #000;letter-spacing:2px;margin-bottom:7px;padding-left:2px}
+
+/* ── ADVANCEMENTS ── */
+.advs{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:5px;animation:fadeIn .5s .5s ease both}
+.adv{background:rgba(0,0,0,.75);border:2px solid #333;box-shadow:inset 1px 1px 0 #444;padding:9px;display:flex;gap:7px;align-items:center;cursor:pointer;transition:border-color .1s}
+.adv:hover{border-color:#666}
+.adv.done{border-color:#AA8800;background:rgba(40,30,0,.8);box-shadow:inset 1px 1px 0 #FFD700,0 0 8px rgba(255,215,0,.2)}
+.av-i{font-size:20px;flex-shrink:0}
+.av-n{font-size:.28rem;color:#CCC;text-shadow:1px 1px 0 #000;letter-spacing:1px;margin-bottom:3px}
+.av-s{font-size:.24rem;letter-spacing:1px}
+.adv.done .av-s{color:#FFFF55}.adv:not(.done) .av-s{color:#444}
+
+/* ── DAY HUD ── */
+.day-hud{position:fixed;top:10px;right:10px;background:rgba(0,0,0,.88);border:3px solid;border-color:#666 #222 #222 #666;box-shadow:inset 1px 1px 0 #999;padding:7px 13px;text-align:center;z-index:100}
+.day-num{font-size:1rem;color:var(--mc-gold);text-shadow:2px 2px 0 #664400;display:block}
+.day-lbl{font-size:.26rem;color:#AAA;letter-spacing:2px;display:block;margin-top:2px}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(180,0,0,.35);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.mc-modal{background:rgba(0,0,0,.93);border:4px solid;border-color:#AA0000 #440000 #440000 #AA0000;box-shadow:inset 2px 2px 0 #DD0000,0 0 40px rgba(255,0,0,.4);padding:28px;text-align:center;max-width:340px;width:90%;animation:mpop .25s ease both}
+@keyframes mpop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.mc-modal h2{font-size:.9rem;color:#FF3333;text-shadow:3px 3px 0 #000;margin-bottom:8px;letter-spacing:2px}
+.mc-modal p{font-size:.32rem;color:#CCC;text-shadow:1px 1px 0 #000;margin-bottom:18px;line-height:2.2;letter-spacing:1px}
+.modal-btns{display:flex;gap:8px;justify-content:center}
+
+.sel-hint{font-size:.28rem;color:#AAAAAA;text-shadow:1px 1px 0 #000;text-align:center;margin-bottom:8px;letter-spacing:2px}
 </style>
 </head>
 <body>
 
-<!-- Day Counter -->
-<div class="day-counter">
+<!-- WORLD BG -->
+<div class="world-bg">
+  <div class="sky"></div>
+  <div class="stars"></div>
+  <div class="moon"></div>
+  <div class="clouds">
+    <div class="cloud" style="left:3%;top:0;width:110px"></div>
+    <div class="cloud" style="left:18%;top:14px;width:75px;height:20px"></div>
+    <div class="cloud" style="left:38%;top:4px;width:130px"></div>
+    <div class="cloud" style="left:58%;top:8px;width:95px;height:22px"></div>
+    <div class="cloud" style="left:78%;top:2px;width:85px"></div>
+    <div class="cloud" style="left:93%;top:12px;width:100px;height:20px"></div>
+    <div class="cloud" style="left:110%;top:0;width:120px"></div>
+    <div class="cloud" style="left:130%;top:10px;width:80px;height:20px"></div>
+    <div class="cloud" style="left:150%;top:4px;width:110px"></div>
+    <div class="cloud" style="left:170%;top:8px;width:90px;height:22px"></div>
+    <div class="cloud" style="left:188%;top:2px;width:75px"></div>
+  </div>
+  <div class="terrain" id="terrain"></div>
+</div>
+
+<div class="day-hud">
   <span class="day-num" id="dayNum">1</span>
   <span class="day-lbl">DAYS SURVIVED</span>
 </div>
 
 <div class="container">
 
-  <!-- Header -->
-  <header class="header">
-    <div class="skull-row">💀 ☠️ 💀 ☠️ 💀</div>
-    <h1 class="title-main">HARDCORE</h1>
-    <div class="title-sub">☠ ONE LIFE. ONE WORLD. FOUR LEGENDS ☠</div>
-    <div class="divider">
-      <div class="divider-line"></div>
-      <div class="divider-icon">🔥</div>
-      <div class="divider-line"></div>
-    </div>
-  </header>
-
-  <!-- World Bar -->
-  <div class="world-bar">
-    <div class="world-stat">
-      <div class="world-stat-label">World Seed</div>
-      <div class="world-stat-value">#GangHC_01</div>
-    </div>
-    <div class="world-stat">
-      <div class="world-stat-label">Difficulty</div>
-      <div class="world-stat-value" style="color: var(--heart);">☠ HARDCORE</div>
-    </div>
-    <div class="world-stat">
-      <div class="world-stat-label">Squad Status</div>
-      <div class="status-badge">
-        <div class="status-dot"></div>
-        ALIVE
-      </div>
-    </div>
-    <div class="world-stat">
-      <div class="world-stat-label">Deaths</div>
-      <div class="world-stat-value" id="deathCounter">0</div>
-    </div>
-    <div class="world-stat">
-      <div class="world-stat-label">Season</div>
-      <div class="world-stat-value">I</div>
-    </div>
+  <!-- HEADER -->
+  <div class="mc-panel header">
+    <div class="title-main">☠ HARDCORE ☠</div>
+    <div class="title-sub">☠ &nbsp; ONE LIFE · ONE WORLD · FOUR LEGENDS &nbsp; ☠</div>
   </div>
 
-  <!-- Player Grid -->
-  <div class="players-grid" id="playersGrid">
+  <!-- STATUS -->
+  <div class="mc-panel status-bar">
+    <div class="s-stat"><div class="s-lbl">WORLD</div><div class="s-val">#GangHC_S1</div></div>
+    <div class="s-stat"><div class="s-lbl">DIFFICULTY</div><div class="hc-badge">☠ HARDCORE</div></div>
+    <div class="s-stat"><div class="s-lbl">SQUAD ALIVE</div><div class="s-val" id="aliveCount">4 / 4</div></div>
+    <div class="s-stat"><div class="s-lbl">TOTAL DEATHS</div><div class="s-val red" id="deathCounter">0</div></div>
+    <div class="s-stat"><div class="s-lbl">SEASON</div><div class="s-val">I</div></div>
+  </div>
 
-    <!-- SPRIZEN -->
-    <div class="player-card" id="card-0" style="--card-accent: #4BFFFE;" onclick="selectPlayer(0)">
-      <div class="rank-badge">⚔ WARRIOR</div>
-      <div class="skin-area">
-        <div class="skin-figure">
-          <span class="pixel-char">🧙</span>
-        </div>
-      </div>
+  <!-- PLAYER GRID -->
+  <div class="sel-hint">▶ CLICK A PLAYER TO SELECT ◀</div>
+  <div class="players-grid">
+
+    <div class="player-card selected" id="card-0" onclick="selectPlayer(0)">
+      <div class="class-tag">⚔ WARRIOR</div>
+      <div class="skin-wrap"><div class="pixel-skin skin-s"><div class="px-head"></div><div class="px-body"></div><div class="px-arm-l"></div><div class="px-arm-r"></div><div class="px-leg-l"></div><div class="px-leg-r"></div></div></div>
       <div class="player-name">Sprizen</div>
-      <div class="player-title">The Strategist</div>
-
-      <div class="hearts-section">
-        <div class="hearts-label">HEALTH</div>
-        <div class="hearts-row" id="hearts-0"></div>
+      <div class="player-title">THE STRATEGIST</div>
+      <div class="h-lbl">HEALTH</div>
+      <div class="hearts-row" id="hearts-0"></div>
+      <div class="xp-wrap"><div class="xp-hdr"><span>EXPERIENCE</span><span id="xp-lv-0">Lv.1</span></div><div class="xp-bg"><div class="xp-fill" id="xp-0" style="width:0%"></div></div></div>
+      <div class="stats-slots">
+        <div class="stat-slot"><span class="si">⚔️</span><div><span class="sv" id="kills-0">0</span><span class="sl">KILLS</span></div></div>
+        <div class="stat-slot"><span class="si">💎</span><div><span class="sv" id="loot-0">0</span><span class="sl">LOOT</span></div></div>
       </div>
-
-      <div class="xp-section">
-        <div class="xp-label"><span>EXPERIENCE</span><span id="xp-label-0">Lv.1</span></div>
-        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-0" style="width:0%"></div></div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-chip">
-          <span class="stat-chip-icon">⚔️</span>
-          <span class="stat-chip-val" id="kills-0">0</span>
-          <span class="stat-chip-lbl">KILLS</span>
-        </div>
-        <div class="stat-chip">
-          <span class="stat-chip-icon">🪙</span>
-          <span class="stat-chip-val" id="loot-0">0</span>
-          <span class="stat-chip-lbl">LOOT</span>
-        </div>
-      </div>
-
-      <div class="achievement">
-        <div class="ach-icon">🏆</div>
-        <div>
-          <div class="ach-name">First Night Survivor</div>
-          <div class="ach-text">Made it through the dark</div>
-        </div>
-      </div>
-
-      <div class="dead-overlay">
-        <div style="font-size:48px">💀</div>
-        <div class="dead-text">ELIMINATED</div>
-        <div class="dead-cause" id="dead-cause-0">Fell into the void</div>
-      </div>
+      <div class="ach-tag"><span class="ai">🏆</span><div><span class="an">FIRST NIGHT</span><span class="ad">Survived the dark</span></div></div>
+      <div class="dead-screen"><div style="font-size:34px">💀</div><div class="dt">YOU DIED!</div><div class="dc" id="dead-msg-0">Fell into lava</div></div>
     </div>
 
-    <!-- JABA -->
-    <div class="player-card" id="card-1" style="--card-accent: #FFD700;" onclick="selectPlayer(1)">
-      <div class="rank-badge">🛡 GUARDIAN</div>
-      <div class="skin-area">
-        <div class="skin-figure">
-          <span class="pixel-char">🧝</span>
-        </div>
-      </div>
+    <div class="player-card" id="card-1" onclick="selectPlayer(1)">
+      <div class="class-tag">🛡 GUARDIAN</div>
+      <div class="skin-wrap"><div class="pixel-skin skin-j"><div class="px-head"></div><div class="px-body"></div><div class="px-arm-l"></div><div class="px-arm-r"></div><div class="px-leg-l"></div><div class="px-leg-r"></div></div></div>
       <div class="player-name">Jaba</div>
-      <div class="player-title">The Iron Wall</div>
-
-      <div class="hearts-section">
-        <div class="hearts-label">HEALTH</div>
-        <div class="hearts-row" id="hearts-1"></div>
+      <div class="player-title">THE IRON WALL</div>
+      <div class="h-lbl">HEALTH</div>
+      <div class="hearts-row" id="hearts-1"></div>
+      <div class="xp-wrap"><div class="xp-hdr"><span>EXPERIENCE</span><span id="xp-lv-1">Lv.1</span></div><div class="xp-bg"><div class="xp-fill" id="xp-1" style="width:0%"></div></div></div>
+      <div class="stats-slots">
+        <div class="stat-slot"><span class="si">⚔️</span><div><span class="sv" id="kills-1">0</span><span class="sl">KILLS</span></div></div>
+        <div class="stat-slot"><span class="si">💎</span><div><span class="sv" id="loot-1">0</span><span class="sl">LOOT</span></div></div>
       </div>
-
-      <div class="xp-section">
-        <div class="xp-label"><span>EXPERIENCE</span><span id="xp-label-1">Lv.1</span></div>
-        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-1" style="width:0%"></div></div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-chip">
-          <span class="stat-chip-icon">⚔️</span>
-          <span class="stat-chip-val" id="kills-1">0</span>
-          <span class="stat-chip-lbl">KILLS</span>
-        </div>
-        <div class="stat-chip">
-          <span class="stat-chip-icon">🪙</span>
-          <span class="stat-chip-val" id="loot-1">0</span>
-          <span class="stat-chip-lbl">LOOT</span>
-        </div>
-      </div>
-
-      <div class="achievement">
-        <div class="ach-icon">🛡️</div>
-        <div>
-          <div class="ach-name">Stone Cold</div>
-          <div class="ach-text">First set of stone tools</div>
-        </div>
-      </div>
-
-      <div class="dead-overlay">
-        <div style="font-size:48px">💀</div>
-        <div class="dead-text">ELIMINATED</div>
-        <div class="dead-cause" id="dead-cause-1">Fell into the void</div>
-      </div>
+      <div class="ach-tag"><span class="ai">🛡️</span><div><span class="an">STONE COLD</span><span class="ad">First stone tools</span></div></div>
+      <div class="dead-screen"><div style="font-size:34px">💀</div><div class="dt">YOU DIED!</div><div class="dc" id="dead-msg-1">Fell into lava</div></div>
     </div>
 
-    <!-- PIYUSH -->
-    <div class="player-card" id="card-2" style="--card-accent: #7CFC00;" onclick="selectPlayer(2)">
-      <div class="rank-badge">🏹 RANGER</div>
-      <div class="skin-area">
-        <div class="skin-figure">
-          <span class="pixel-char">🧑‍🌾</span>
-        </div>
-      </div>
+    <div class="player-card" id="card-2" onclick="selectPlayer(2)">
+      <div class="class-tag">🏹 RANGER</div>
+      <div class="skin-wrap"><div class="pixel-skin skin-p"><div class="px-head"></div><div class="px-body"></div><div class="px-arm-l"></div><div class="px-arm-r"></div><div class="px-leg-l"></div><div class="px-leg-r"></div></div></div>
       <div class="player-name">Piyush</div>
-      <div class="player-title">The Resource King</div>
-
-      <div class="hearts-section">
-        <div class="hearts-label">HEALTH</div>
-        <div class="hearts-row" id="hearts-2"></div>
+      <div class="player-title">RESOURCE KING</div>
+      <div class="h-lbl">HEALTH</div>
+      <div class="hearts-row" id="hearts-2"></div>
+      <div class="xp-wrap"><div class="xp-hdr"><span>EXPERIENCE</span><span id="xp-lv-2">Lv.1</span></div><div class="xp-bg"><div class="xp-fill" id="xp-2" style="width:0%"></div></div></div>
+      <div class="stats-slots">
+        <div class="stat-slot"><span class="si">⚔️</span><div><span class="sv" id="kills-2">0</span><span class="sl">KILLS</span></div></div>
+        <div class="stat-slot"><span class="si">💎</span><div><span class="sv" id="loot-2">0</span><span class="sl">LOOT</span></div></div>
       </div>
-
-      <div class="xp-section">
-        <div class="xp-label"><span>EXPERIENCE</span><span id="xp-label-2">Lv.1</span></div>
-        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-2" style="width:0%"></div></div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-chip">
-          <span class="stat-chip-icon">⚔️</span>
-          <span class="stat-chip-val" id="kills-2">0</span>
-          <span class="stat-chip-lbl">KILLS</span>
-        </div>
-        <div class="stat-chip">
-          <span class="stat-chip-icon">🪙</span>
-          <span class="stat-chip-val" id="loot-2">0</span>
-          <span class="stat-chip-lbl">LOOT</span>
-        </div>
-      </div>
-
-      <div class="achievement">
-        <div class="ach-icon">⛏️</div>
-        <div>
-          <div class="ach-name">Deep Miner</div>
-          <div class="ach-text">Dug to Y=-58</div>
-        </div>
-      </div>
-
-      <div class="dead-overlay">
-        <div style="font-size:48px">💀</div>
-        <div class="dead-text">ELIMINATED</div>
-        <div class="dead-cause" id="dead-cause-2">Fell into the void</div>
-      </div>
+      <div class="ach-tag"><span class="ai">⛏️</span><div><span class="an">DEEP MINER</span><span class="ad">Dug to Y=-58</span></div></div>
+      <div class="dead-screen"><div style="font-size:34px">💀</div><div class="dt">YOU DIED!</div><div class="dc" id="dead-msg-2">Fell into lava</div></div>
     </div>
 
-    <!-- GOKUL -->
-    <div class="player-card" id="card-3" style="--card-accent: #FF6A00;" onclick="selectPlayer(3)">
-      <div class="rank-badge">🔥 BERSERKER</div>
-      <div class="skin-area">
-        <div class="skin-figure">
-          <span class="pixel-char">🧑‍🔬</span>
-        </div>
-      </div>
+    <div class="player-card" id="card-3" onclick="selectPlayer(3)">
+      <div class="class-tag">🔥 BERSERKER</div>
+      <div class="skin-wrap"><div class="pixel-skin skin-g"><div class="px-head"></div><div class="px-body"></div><div class="px-arm-l"></div><div class="px-arm-r"></div><div class="px-leg-l"></div><div class="px-leg-r"></div></div></div>
       <div class="player-name">Gokul</div>
-      <div class="player-title">The Chaos Agent</div>
-
-      <div class="hearts-section">
-        <div class="hearts-label">HEALTH</div>
-        <div class="hearts-row" id="hearts-3"></div>
+      <div class="player-title">CHAOS AGENT</div>
+      <div class="h-lbl">HEALTH</div>
+      <div class="hearts-row" id="hearts-3"></div>
+      <div class="xp-wrap"><div class="xp-hdr"><span>EXPERIENCE</span><span id="xp-lv-3">Lv.1</span></div><div class="xp-bg"><div class="xp-fill" id="xp-3" style="width:0%"></div></div></div>
+      <div class="stats-slots">
+        <div class="stat-slot"><span class="si">⚔️</span><div><span class="sv" id="kills-3">0</span><span class="sl">KILLS</span></div></div>
+        <div class="stat-slot"><span class="si">💎</span><div><span class="sv" id="loot-3">0</span><span class="sl">LOOT</span></div></div>
       </div>
-
-      <div class="xp-section">
-        <div class="xp-label"><span>EXPERIENCE</span><span id="xp-label-3">Lv.1</span></div>
-        <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-3" style="width:0%"></div></div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-chip">
-          <span class="stat-chip-icon">⚔️</span>
-          <span class="stat-chip-val" id="kills-3">0</span>
-          <span class="stat-chip-lbl">KILLS</span>
-        </div>
-        <div class="stat-chip">
-          <span class="stat-chip-icon">🪙</span>
-          <span class="stat-chip-val" id="loot-3">0</span>
-          <span class="stat-chip-lbl">LOOT</span>
-        </div>
-      </div>
-
-      <div class="achievement">
-        <div class="ach-icon">🔥</div>
-        <div>
-          <div class="ach-name">Blazing Start</div>
-          <div class="ach-text">First Nether portal</div>
-        </div>
-      </div>
-
-      <div class="dead-overlay">
-        <div style="font-size:48px">💀</div>
-        <div class="dead-text">ELIMINATED</div>
-        <div class="dead-cause" id="dead-cause-3">Fell into the void</div>
-      </div>
+      <div class="ach-tag"><span class="ai">🔥</span><div><span class="an">NETHER BOUND</span><span class="ad">First portal lit</span></div></div>
+      <div class="dead-screen"><div style="font-size:34px">💀</div><div class="dt">YOU DIED!</div><div class="dc" id="dead-msg-3">Fell into lava</div></div>
     </div>
 
   </div>
 
-  <!-- Controls -->
-  <div class="controls">
-    <button class="btn btn-primary" onclick="addKill()">⚔️ Add Kill</button>
-    <button class="btn btn-primary" onclick="addLoot()">💎 Found Loot</button>
-    <button class="btn btn-primary" onclick="gainXP()">⭐ Gain XP</button>
-    <button class="btn btn-danger" onclick="loseHeart()">💔 Lost Heart</button>
-    <button class="btn btn-danger" onclick="killPlayer()">☠️ Player Died</button>
-    <button class="btn btn-primary" onclick="nextDay()">🌅 Next Day</button>
+  <!-- BUTTONS -->
+  <div class="btn-group">
+    <button class="mc-btn btn-g" onclick="addKill()">⚔ ADD KILL</button>
+    <button class="mc-btn btn-b" onclick="addLoot()">💎 FOUND LOOT</button>
+    <button class="mc-btn btn-y" onclick="gainXP()">⭐ GAIN XP</button>
+    <button class="mc-btn btn-r" onclick="loseHeart()">💔 LOST HEART</button>
+    <button class="mc-btn btn-r" onclick="killPlayer()">☠ PLAYER DIED</button>
+    <button class="mc-btn btn-y" onclick="nextDay()">🌅 NEXT DAY</button>
   </div>
 
-  <!-- Events Log -->
-  <div class="section-title">📜 Chronicle of Events</div>
-  <div class="events-log" id="eventsLog">
-    <div class="event-item">
-      <div class="event-icon">🌅</div>
-      <div class="event-body">
-        <div class="event-text"><strong>Day 1 begins.</strong> The squad spawns into a world of unknown dangers. <span class="highlight">May fortune favour the brave.</span></div>
-        <div class="event-time">DAY 1 · THE BEGINNING</div>
-      </div>
+  <!-- CHAT LOG -->
+  <div class="mc-panel">
+    <div class="section-hdr">💬 CHAT LOG</div>
+    <div class="mc-divider"></div>
+    <div class="chat-box" id="chatBox">
+      <div class="chat-line"><span class="cd">[Day 1]</span> <span class="cs">The world has been created. Good luck, heroes.</span></div>
     </div>
   </div>
 
-  <!-- Objectives -->
-  <div class="section-title">🎯 Quest Board</div>
-  <div class="objectives">
-    <div class="objective" id="obj-0">
-      <div class="obj-icon">🏠</div>
-      <div>
-        <div class="obj-name">Build a Base</div>
-        <div class="obj-status">PENDING</div>
-      </div>
+  <!-- ADVANCEMENTS -->
+  <div class="mc-panel" style="margin-top:10px">
+    <div class="section-hdr">📜 ADVANCEMENTS</div>
+    <div class="mc-divider"></div>
+    <div class="advs">
+      <div class="adv" id="adv-0" onclick="toggleAdv(0)"><span class="av-i">🏠</span><div><div class="av-n">BUILD A BASE</div><div class="av-s">LOCKED</div></div></div>
+      <div class="adv" id="adv-1" onclick="toggleAdv(1)"><span class="av-i">💎</span><div><div class="av-n">FIND DIAMONDS</div><div class="av-s">LOCKED</div></div></div>
+      <div class="adv" id="adv-2" onclick="toggleAdv(2)"><span class="av-i">🌋</span><div><div class="av-n">ENTER NETHER</div><div class="av-s">LOCKED</div></div></div>
+      <div class="adv" id="adv-3" onclick="toggleAdv(3)"><span class="av-i">🏰</span><div><div class="av-n">FIND STRONGHOLD</div><div class="av-s">LOCKED</div></div></div>
+      <div class="adv" id="adv-4" onclick="toggleAdv(4)"><span class="av-i">🐲</span><div><div class="av-n">SLAY DRAGON</div><div class="av-s">LOCKED</div></div></div>
+      <div class="adv" id="adv-5" onclick="toggleAdv(5)"><span class="av-i">⭐</span><div><div class="av-n">WIN THE WORLD</div><div class="av-s">LOCKED</div></div></div>
     </div>
-    <div class="objective" id="obj-1">
-      <div class="obj-icon">💎</div>
-      <div>
-        <div class="obj-name">Find Diamonds</div>
-        <div class="obj-status">PENDING</div>
-      </div>
-    </div>
-    <div class="objective" id="obj-2">
-      <div class="obj-icon">🌋</div>
-      <div>
-        <div class="obj-name">Enter the Nether</div>
-        <div class="obj-status">PENDING</div>
-      </div>
-    </div>
-    <div class="objective" id="obj-3">
-      <div class="obj-icon">🏰</div>
-      <div>
-        <div class="obj-name">Find Stronghold</div>
-        <div class="obj-status">PENDING</div>
-      </div>
-    </div>
-    <div class="objective" id="obj-4">
-      <div class="obj-icon">🐉</div>
-      <div>
-        <div class="obj-name">Slay the Dragon</div>
-        <div class="obj-status">PENDING</div>
-      </div>
-    </div>
-    <div class="objective" id="obj-5">
-      <div class="obj-icon">⭐</div>
-      <div>
-        <div class="obj-name">Reach the End</div>
-        <div class="obj-status">PENDING</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    "In this world, death is permanent. Play wisely."
-    <br>— The Hardcore Oath
   </div>
 
 </div>
 
-<!-- Modal -->
+<!-- MODAL -->
 <div class="modal-overlay" id="modal">
-  <div class="modal">
-    <h2>☠️ PLAYER FELL</h2>
-    <p id="modal-text">Are you sure this player has died?</p>
-    <div class="modal-buttons">
-      <button class="btn btn-danger" onclick="confirmDeath()">Confirm Death</button>
-      <button class="btn btn-primary" onclick="closeModal()">Cancel</button>
+  <div class="mc-modal">
+    <h2>☠ YOU DIED!</h2>
+    <p id="modal-msg">Is this player really dead?<br>This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="mc-btn btn-r" onclick="confirmDeath()">CONFIRM</button>
+      <button class="mc-btn btn-g" onclick="closeModal()">CANCEL</button>
     </div>
   </div>
 </div>
 
 <script>
-  const players = [
-    { name: 'Sprizen', hearts: 10, maxHearts: 10, xp: 0, level: 1, kills: 0, loot: 0, alive: true, deathCause: '' },
-    { name: 'Jaba',    hearts: 10, maxHearts: 10, xp: 0, level: 1, kills: 0, loot: 0, alive: true, deathCause: '' },
-    { name: 'Piyush',  hearts: 10, maxHearts: 10, xp: 0, level: 1, kills: 0, loot: 0, alive: true, deathCause: '' },
-    { name: 'Gokul',   hearts: 10, maxHearts: 10, xp: 0, level: 1, kills: 0, loot: 0, alive: true, deathCause: '' },
-  ];
+const players=[
+  {name:'Sprizen',hearts:10,maxHearts:10,xp:0,level:1,kills:0,loot:0,alive:true},
+  {name:'Jaba',hearts:10,maxHearts:10,xp:0,level:1,kills:0,loot:0,alive:true},
+  {name:'Piyush',hearts:10,maxHearts:10,xp:0,level:1,kills:0,loot:0,alive:true},
+  {name:'Gokul',hearts:10,maxHearts:10,xp:0,level:1,kills:0,loot:0,alive:true},
+];
+const deaths_msg=['was slain by a Creeper','fell into lava','was shot by a Skeleton','drowned','fell from a high place','was slain by a Zombie','burned to death','was blown up by a Ghast','starved to death','walked into a Cactus','was killed by magic','fell out of the world','was slain by an Enderman'];
+let sel=0,day=1,deaths=0,pendingDeath=-1;
 
-  let selectedPlayer = 0;
-  let day = 1;
-  let deathCount = 0;
-  let pendingDeathPlayer = -1;
+// Terrain
+function buildTerrain(){
+  const t=document.getElementById('terrain');
+  const cols=Math.ceil(window.innerWidth/32)*2+8;
+  const bTypes=['b-grass','b-grass','b-grass','b-leaves','b-wood'];
+  let r1='<div class="terrain-row">';
+  for(let i=0;i<cols;i++)r1+=`<div class="block ${bTypes[Math.floor(Math.random()*bTypes.length)]}"></div>`;
+  r1+='</div>';
+  let r2='<div class="terrain-row">';
+  for(let i=0;i<cols;i++)r2+='<div class="block b-dirt"></div>';
+  r2+='</div>';
+  let r3='<div class="terrain-row">';
+  for(let i=0;i<cols;i++)r3+='<div class="block b-stone"></div>';
+  r3+='</div>';
+  t.innerHTML=r1+r2+r3;
+}
+buildTerrain();
 
-  const deathCauses = [
-    'Killed by a Creeper', 'Fell into lava', 'Shot by a Skeleton',
-    'Suffocated in a wall', 'Drowned', 'Blown up by TNT',
-    'Slain by a Zombie', 'Fell from high up', 'Starved to death',
-    'Blasted by a Ghast', 'Struck by lightning', 'Poisoned by a Spider'
-  ];
-
-  function renderHearts(i) {
-    const p = players[i];
-    const container = document.getElementById(`hearts-${i}`);
-    container.innerHTML = '';
-    for (let h = 0; h < p.maxHearts; h++) {
-      const heart = document.createElement('span');
-      heart.className = 'heart' + (h >= p.hearts ? ' empty' : '');
-      heart.textContent = h < p.hearts ? '❤️' : '🖤';
-      container.appendChild(heart);
-    }
+function renderHearts(i){
+  const p=players[i],c=document.getElementById('hearts-'+i);
+  c.innerHTML='';
+  for(let h=0;h<p.maxHearts;h++){
+    const s=document.createElement('span');
+    s.className='hrt '+(h<p.hearts?'full':'empty');
+    s.textContent='❤';
+    if(h<p.hearts)s.style.animationDelay=(h*.12)+'s';
+    c.appendChild(s);
   }
+}
+function renderXP(i){
+  const p=players[i];
+  document.getElementById('xp-'+i).style.width=(p.xp%100)+'%';
+  document.getElementById('xp-lv-'+i).textContent='Lv.'+p.level;
+}
+function renderStats(i){
+  document.getElementById('kills-'+i).textContent=players[i].kills;
+  document.getElementById('loot-'+i).textContent=players[i].loot;
+}
+function renderCard(i){
+  renderHearts(i);renderXP(i);renderStats(i);
+  const card=document.getElementById('card-'+i);
+  if(!players[i].alive){card.classList.add('dead');card.classList.remove('selected');}
+}
+function renderAll(){
+  players.forEach((_,i)=>renderCard(i));
+  document.getElementById('dayNum').textContent=day;
+  document.getElementById('deathCounter').textContent=deaths;
+  document.getElementById('aliveCount').textContent=players.filter(p=>p.alive).length+' / 4';
+}
+function highlight(){
+  document.querySelectorAll('.player-card').forEach((c,i)=>{
+    c.classList.toggle('selected',i===sel&&players[i].alive);
+  });
+}
+function chat(type,msg){
+  const box=document.getElementById('chatBox');
+  const line=document.createElement('div');
+  line.className='chat-line';
+  const cls=type==='death'?'ck':type==='ach'?'ca':type==='sys'?'cs':'cm';
+  line.innerHTML=`<span class="cd">[Day ${day}]</span> <span class="${cls}">${msg}</span>`;
+  box.insertBefore(line,box.firstChild);
+}
+function selectPlayer(i){
+  if(!players[i].alive)return;
+  sel=i;highlight();chat('sys','> '+players[i].name+' selected.');
+}
+function checkLevel(i){
+  const p=players[i];
+  if(p.xp>=100*p.level){p.level++;chat('ach',p.name+' reached Level '+p.level+'!');}
+}
+function addKill(){
+  const p=players[sel];if(!p.alive)return;
+  p.kills++;p.xp+=15;checkLevel(sel);renderStats(sel);renderXP(sel);
+  chat('msg',p.name+' slain a mob! ['+p.kills+' kills]');
+}
+function addLoot(){
+  const p=players[sel];if(!p.alive)return;
+  p.loot++;p.xp+=10;checkLevel(sel);renderStats(sel);renderXP(sel);
+  chat('ach',p.name+' found loot! ['+p.loot+' total]');
+}
+function gainXP(){
+  const p=players[sel];if(!p.alive)return;
+  p.xp+=25;checkLevel(sel);renderXP(sel);
+  chat('sys',p.name+' gained experience!');
+}
+function loseHeart(){
+  const p=players[sel];if(!p.alive||p.hearts<=0)return;
+  p.hearts--;renderHearts(sel);
+  if(p.hearts===0){pendingDeath=sel;confirmDeath();return;}
+  const w=p.hearts<=3?' ⚠ CRITICAL!':'';
+  chat('death',p.name+' took damage! ['+p.hearts+'❤ left]'+w);
+}
+function killPlayer(){
+  if(!players[sel].alive)return;
+  pendingDeath=sel;
+  document.getElementById('modal-msg').innerHTML=players[sel].name+' has died?<br>This cannot be undone.';
+  document.getElementById('modal').classList.add('active');
+}
+function confirmDeath(){
+  const i=pendingDeath>=0?pendingDeath:sel;
+  const p=players[i];
+  p.alive=false;p.hearts=0;
+  const cause=deaths_msg[Math.floor(Math.random()*deaths_msg.length)];
+  document.getElementById('dead-msg-'+i).textContent=p.name+' '+cause;
+  deaths++;closeModal();renderAll();
+  chat('death','☠ '+p.name+' '+cause+'!');
+  pendingDeath=-1;
+  const next=players.findIndex(pl=>pl.alive);
+  if(next>=0){sel=next;highlight();}
+  if(players.every(pl=>!pl.alive))setTimeout(()=>chat('death','☠ THE WORLD IS OVER. GG.'),400);
+}
+function closeModal(){document.getElementById('modal').classList.remove('active')}
+function nextDay(){
+  day++;document.getElementById('dayNum').textContent=day;
+  chat('sys','☀ Day '+day+' begins. Stay alive.');
+}
+function toggleAdv(i){
+  const el=document.getElementById('adv-'+i);
+  const done=el.classList.toggle('done');
+  el.querySelector('.av-s').textContent=done?'✔ COMPLETE':'LOCKED';
+  if(done){const n=el.querySelector('.av-n').textContent;chat('ach','🏆 Advancement: '+n+'!');}
+}
 
-  function renderXP(i) {
-    const p = players[i];
-    const pct = (p.xp % 100);
-    document.getElementById(`xp-${i}`).style.width = pct + '%';
-    document.getElementById(`xp-label-${i}`).textContent = 'Lv.' + p.level;
-  }
-
-  function renderStats(i) {
-    document.getElementById(`kills-${i}`).textContent = players[i].kills;
-    document.getElementById(`loot-${i}`).textContent = players[i].loot;
-  }
-
-  function renderAll() {
-    players.forEach((p, i) => {
-      renderHearts(i);
-      renderXP(i);
-      renderStats(i);
-      const card = document.getElementById(`card-${i}`);
-      if (!p.alive) {
-        card.classList.add('dead');
-        document.getElementById(`dead-cause-${i}`).textContent = p.deathCause;
-      } else {
-        card.classList.remove('dead');
-      }
-    });
-    document.getElementById('dayNum').textContent = day;
-    document.getElementById('deathCounter').textContent = deathCount;
-    updateSquadStatus();
-  }
-
-  function highlightSelected() {
-    document.querySelectorAll('.player-card').forEach((c, i) => {
-      c.style.outline = i === selectedPlayer ? '2px solid rgba(255,215,0,0.6)' : 'none';
-    });
-  }
-
-  function selectPlayer(i) {
-    if (!players[i].alive) return;
-    selectedPlayer = i;
-    highlightSelected();
-    addEvent('🎯', `<strong>${players[i].name}</strong> is now selected.`, 'info');
-  }
-
-  function getAlive() { return players.filter(p => p.alive); }
-
-  function addEvent(icon, text, type = 'info') {
-    const log = document.getElementById('eventsLog');
-    const item = document.createElement('div');
-    item.className = `event-item event-type-${type}`;
-    item.innerHTML = `
-      <div class="event-icon">${icon}</div>
-      <div class="event-body">
-        <div class="event-text">${text}</div>
-        <div class="event-time">DAY ${day}</div>
-      </div>`;
-    log.insertBefore(item, log.firstChild);
-  }
-
-  function addKill() {
-    const p = players[selectedPlayer];
-    if (!p.alive) return;
-    p.kills++;
-    p.xp += 15;
-    if (p.xp >= 100 * p.level) p.level++;
-    renderStats(selectedPlayer);
-    renderXP(selectedPlayer);
-    addEvent('⚔️', `<strong>${p.name}</strong> slew an enemy! Kills: <span class="highlight">${p.kills}</span>`, 'achievement');
-  }
-
-  function addLoot() {
-    const p = players[selectedPlayer];
-    if (!p.alive) return;
-    p.loot++;
-    p.xp += 10;
-    if (p.xp >= 100 * p.level) p.level++;
-    renderStats(selectedPlayer);
-    renderXP(selectedPlayer);
-    addEvent('💎', `<strong>${p.name}</strong> found precious loot! Total: <span class="highlight">${p.loot}</span>`, 'achievement');
-  }
-
-  function gainXP() {
-    const p = players[selectedPlayer];
-    if (!p.alive) return;
-    p.xp += 25;
-    if (p.xp >= 100 * p.level) { p.level++; addEvent('⭐', `<strong>${p.name}</strong> reached <span class="highlight">Level ${p.level}!</span>`, 'achievement'); }
-    renderXP(selectedPlayer);
-    addEvent('✨', `<strong>${p.name}</strong> gained experience!`, 'info');
-  }
-
-  function loseHeart() {
-    const p = players[selectedPlayer];
-    if (!p.alive || p.hearts <= 0) return;
-    p.hearts--;
-    renderHearts(selectedPlayer);
-    if (p.hearts <= 3) {
-      addEvent('💔', `<strong>${p.name}</strong> is critically low — only <span class="highlight">${p.hearts} hearts</span> remaining!`, 'death');
-    } else {
-      addEvent('💔', `<strong>${p.name}</strong> took damage. <span class="highlight">${p.hearts}/${p.maxHearts}</span> hearts left.`, 'info');
-    }
-    if (p.hearts === 0) { pendingDeathPlayer = selectedPlayer; confirmDeath(); }
-  }
-
-  function killPlayer() {
-    if (!players[selectedPlayer].alive) return;
-    pendingDeathPlayer = selectedPlayer;
-    document.getElementById('modal-text').textContent = `Is ${players[selectedPlayer].name} really dead?`;
-    document.getElementById('modal').classList.add('active');
-  }
-
-  function confirmDeath() {
-    const idx = pendingDeathPlayer >= 0 ? pendingDeathPlayer : selectedPlayer;
-    const p = players[idx];
-    p.alive = false;
-    p.hearts = 0;
-    p.deathCause = deathCauses[Math.floor(Math.random() * deathCauses.length)];
-    deathCount++;
-    closeModal();
-    renderAll();
-    addEvent('☠️', `<strong>${p.name}</strong> has perished. <span class="highlight">${p.deathCause}</span>`, 'death');
-    pendingDeathPlayer = -1;
-    // pick next alive
-    const aliveIdx = players.findIndex(pl => pl.alive);
-    if (aliveIdx >= 0) { selectedPlayer = aliveIdx; highlightSelected(); }
-    updateSquadStatus();
-  }
-
-  function closeModal() {
-    document.getElementById('modal').classList.remove('active');
-  }
-
-  function nextDay() {
-    day++;
-    document.getElementById('dayNum').textContent = day;
-    addEvent('🌅', `<strong>Day ${day} begins.</strong> The survivors press on.`, 'info');
-    // complete random objective for fun
-    const objs = document.querySelectorAll('.objective:not(.done)');
-    if (day === 3 && objs[0]) completeObj(0, 'Base has been established!');
-    if (day === 5 && objs[1]) completeObj(1, 'Diamonds have been found!');
-  }
-
-  function completeObj(i, msg) {
-    const obj = document.getElementById(`obj-${i}`);
-    if (!obj) return;
-    obj.classList.add('done');
-    obj.querySelector('.obj-status').textContent = '✓ COMPLETE';
-    addEvent('🏆', `Quest complete: <span class="highlight">${msg}</span>`, 'achievement');
-  }
-
-  function updateSquadStatus() {
-    const alive = getAlive().length;
-    const badge = document.querySelector('.status-badge');
-    if (alive === 0) {
-      badge.textContent = '☠ WORLD OVER';
-      badge.style.color = '#555';
-      badge.style.borderColor = '#333';
-      badge.style.animation = 'none';
-    } else if (alive <= 1) {
-      badge.innerHTML = '<div class="status-dot"></div> LAST STAND';
-    } else {
-      badge.innerHTML = '<div class="status-dot"></div> ALIVE';
-    }
-  }
-
-  // Init
-  setTimeout(() => {
-    renderAll();
-    highlightSelected();
-    setTimeout(() => {
-      document.querySelectorAll('.xp-bar-fill').forEach(b => b.style.width = '0%');
-    }, 100);
-  }, 300);
+setTimeout(()=>{renderAll();highlight();},150);
 </script>
 </body>
 </html>
