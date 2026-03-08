@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROJECT JHDJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --neon-cyan: #00fff5;
+    --neon-red: #ff0044;
+    --neon-gold: #ffd700;
+    --dark-bg: #020408;
+    --mid-bg: #050d15;
+    --panel-bg: rgba(0, 255, 245, 0.03);
+    --grid-color: rgba(0, 255, 245, 0.06);
+    --text-primary: #e0faff;
+    --text-dim: rgba(224, 250, 255, 0.45);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark-bg);
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* Animated Grid Background */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 0;
+    animation: gridPulse 8s ease-in-out infinite;
+  }
+
+  @keyframes gridPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Scanline overlay */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.08) 2px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Glitch noise overlay */
+  .noise {
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,255,245,0.2);
+    padding-bottom: 14px;
+    margin-bottom: 60px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .topbar-left {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    margin-right: 8px;
+    animation: blink 1.4s step-start infinite;
+    box-shadow: 0 0 8px var(--neon-cyan);
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .topbar-right {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon-red);
+    letter-spacing: 2px;
+    animation: flickerRed 3s ease-in-out infinite;
+  }
+
+  @keyframes flickerRed {
+    0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.2} 94%{opacity:1} 97%{opacity:1} 98%{opacity:0.3} 99%{opacity:1}
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    animation: fadeUp 0.8s ease 0.2s both;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .project-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 8px;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  .title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(72px, 14vw, 140px);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -2px;
+    position: relative;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--neon-cyan);
+    text-shadow:
+      0 0 30px rgba(0,255,245,0.4),
+      0 0 80px rgba(0,255,245,0.15);
+    animation: titleGlitch 6s ease-in-out infinite;
+  }
+
+  .title::before {
+    content: 'JHDJ';
+    position: absolute;
+    inset: 0;
+    color: var(--neon-red);
+    -webkit-text-stroke: 0;
+    opacity: 0;
+    animation: glitchLayer 6s ease-in-out infinite;
+    clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+  }
+
+  @keyframes titleGlitch {
+    0%,90%,100%{transform:translate(0)} 92%{transform:translate(-3px,1px)} 94%{transform:translate(3px,-1px)} 96%{transform:translate(0)}
+  }
+
+  @keyframes glitchLayer {
+    0%,89%,100%{opacity:0;transform:translate(0)} 90%{opacity:0.7;transform:translate(6px,0)} 91%{opacity:0;transform:translate(-6px,2px)} 93%{opacity:0.5;transform:translate(3px,-2px)} 94%{opacity:0}
+  }
+
+  .fullform {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(10px, 2vw, 16px);
+    letter-spacing: 4px;
+    color: var(--neon-gold);
+    text-transform: uppercase;
+    margin-top: 18px;
+    text-shadow: 0 0 20px rgba(255,215,0,0.5);
+    animation: goldPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes goldPulse {
+    0%,100%{opacity:1;text-shadow:0 0 20px rgba(255,215,0,0.5)}
+    50%{opacity:0.7;text-shadow:0 0 40px rgba(255,215,0,0.9),0 0 80px rgba(255,215,0,0.3)}
+  }
+
+  .divider-line {
+    width: 100%;
+    max-width: 1100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-red), var(--neon-cyan), transparent);
+    margin: 40px 0;
+    animation: lineSweep 4s ease-in-out infinite;
+  }
+
+  @keyframes lineSweep {
+    0%,100%{opacity:0.5} 50%{opacity:1}
+  }
+
+  /* ── MAIN GRID ── */
+  .main-grid {
+    width: 100%;
+    max-width: 1100px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 18px;
+    animation: fadeUp 0.9s ease 0.4s both;
+  }
+
+  .panel {
+    background: var(--panel-bg);
+    border: 1px solid rgba(0,255,245,0.18);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 40px; height: 40px;
+    border-top: 2px solid var(--neon-cyan);
+    border-left: 2px solid var(--neon-cyan);
+  }
+
+  .panel::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 40px; height: 40px;
+    border-bottom: 2px solid var(--neon-cyan);
+    border-right: 2px solid var(--neon-cyan);
+  }
+
+  .panel:hover {
+    border-color: rgba(0,255,245,0.5);
+    box-shadow: 0 0 30px rgba(0,255,245,0.08), inset 0 0 30px rgba(0,255,245,0.03);
+  }
+
+  .panel.red-accent::before,
+  .panel.red-accent::after { border-color: var(--neon-red); }
+  .panel.red-accent { border-color: rgba(255,0,68,0.18); }
+  .panel.red-accent:hover { border-color: rgba(255,0,68,0.5); box-shadow: 0 0 30px rgba(255,0,68,0.08); }
+
+  .panel.gold-accent::before,
+  .panel.gold-accent::after { border-color: var(--neon-gold); }
+  .panel.gold-accent { border-color: rgba(255,215,0,0.18); }
+
+  .panel-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+
+  .panel.red-accent .panel-label { color: var(--neon-red); }
+  .panel.gold-accent .panel-label { color: var(--neon-gold); }
+
+  .panel-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+
+  .panel-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .panel-body strong { color: var(--text-primary); font-weight: 600; }
+
+  /* Wide panels */
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+
+  /* ── PROGRESS BARS ── */
+  .progress-item { margin-bottom: 16px; }
+  .progress-header {
+    display: flex; justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .progress-header span:last-child { color: var(--neon-cyan); }
+
+  .progress-track {
+    height: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-cyan), rgba(0,255,245,0.4));
+    border-radius: 2px;
+    position: relative;
+    animation: fillGrow 1.5s ease 0.8s both;
+    transform-origin: left;
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: 0; top: -2px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+  }
+
+  @keyframes fillGrow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  /* ── STAT BOXES ── */
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    padding: 14px 10px;
+    border: 1px solid rgba(0,255,245,0.1);
+    background: rgba(0,255,245,0.02);
+  }
+
+  .stat-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 20px rgba(0,255,245,0.6);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-lbl {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ── INTERFERENCE VISUAL ── */
+  .interference-canvas {
+    width: 100%;
+    height: 120px;
+    position: relative;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+
+  canvas#waveCanvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── PHASE TIMELINE ── */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 6px;
+  }
+
+  .timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .tl-dot-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .tl-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--neon-cyan);
+    box-shadow: 0 0 8px var(--neon-cyan);
+    flex-shrink: 0;
+  }
+
+  .tl-dot.active {
+    background: var(--neon-cyan);
+    animation: dotPulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes dotPulse {
+    0%,100%{box-shadow:0 0 8px var(--neon-cyan)} 50%{box-shadow:0 0 20px var(--neon-cyan),0 0 40px rgba(0,255,245,0.4)}
+  }
+
+  .tl-dot.done { background: rgba(0,255,245,0.3); border-color: rgba(0,255,245,0.4); box-shadow: none; }
+  .tl-dot.pending { border-color: rgba(255,255,255,0.1); box-shadow: none; }
+
+  .tl-line {
+    width: 1px; height: 20px;
+    background: rgba(0,255,245,0.2);
+    margin-top: 2px;
+  }
+
+  .tl-content { flex: 1; }
+
+  .tl-phase {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--neon-cyan);
+    opacity: 0.6;
+    margin-bottom: 2px;
+  }
+
+  .tl-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .tl-title.pending-text { color: rgba(255,255,255,0.3); }
+
+  /* ── TAG CLOUD ── */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .tag {
+    padding: 4px 12px;
+    border: 1px solid rgba(0,255,245,0.25);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    background: rgba(0,255,245,0.04);
+    transition: all 0.2s;
+  }
+
+  .tag:hover {
+    background: rgba(0,255,245,0.12);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(0,255,245,0.2);
+  }
+
+  /* ── BIG STATEMENT ── */
+  .statement-panel {
+    grid-column: span 3;
+    text-align: center;
+    padding: 40px 30px;
+    background: linear-gradient(135deg, rgba(0,255,245,0.04), rgba(255,0,68,0.04));
+    border: 1px solid rgba(0,255,245,0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .statement-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,255,245,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .big-quote {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(16px, 3.5vw, 28px);
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--text-primary);
+    line-height: 1.4;
+    position: relative;
+    z-index: 1;
+  }
+
+  .big-quote .accent-word {
+    color: var(--neon-gold);
+    text-shadow: 0 0 30px rgba(255,215,0,0.5);
+  }
+
+  .big-quote .red-word {
+    color: var(--neon-red);
+    text-shadow: 0 0 20px rgba(255,0,68,0.5);
+  }
+
+  /* ── BOTTOM BAR ── */
+  .bottombar {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(0,255,245,0.15);
+    padding-top: 20px;
+    margin-top: 40px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    animation: fadeUp 1s ease 0.6s both;
+  }
+
+  .classified {
+    color: var(--neon-red);
+    animation: flickerRed 2s ease-in-out infinite;
+    font-weight: 700;
+    letter-spacing: 3px;
+  }
+
+  /* ── FLOATING PARTICLES ── */
+  .particle {
+    position: fixed;
+    width: 2px; height: 2px;
+    background: var(--neon-cyan);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 3;
+    animation: float linear infinite;
+    box-shadow: 0 0 6px var(--neon-cyan);
+  }
+
+  @keyframes float {
+    from { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    to { transform: translateY(-10vh) translateX(var(--drift)); opacity: 0; }
+  }
+
+  /* ── KEYFRAME UTILITIES ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .main-grid { grid-template-columns: 1fr 1fr; }
+    .span-2 { grid-column: span 2; }
+    .span-3, .statement-panel { grid-column: span 2; }
+  }
+
+  @media (max-width: 500px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .span-2, .span-3, .statement-panel { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="scanlines"></div>
+<div class="noise"></div>
+
+<!-- Floating particles -->
+<script>
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (8 + Math.random() * 16) + 's';
+    p.style.animationDelay = (-Math.random() * 20) + 's';
+    p.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+    p.style.opacity = 0.4 + Math.random() * 0.6;
+    if (Math.random() > 0.7) { p.style.background = '#ff0044'; p.style.boxShadow = '0 0 6px #ff0044'; }
+    document.body.appendChild(p);
+  }
+</script>
+
+<div class="wrapper">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="status-dot"></span>
+      SYSTEM ACTIVE &nbsp;|&nbsp; NODE: JHDJ-7 &nbsp;|&nbsp; UPTIME: 99.7%
+    </div>
+    <div class="topbar-right">⚠ CLASSIFIED · EYES ONLY ⚠</div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="project-label">◈ CLASSIFIED INITIATIVE ◈</div>
+    <div class="title">JHDJ</div>
+    <div class="fullform">Jo · Hoga · Dekha · Jayega</div>
+  </div>
+
+  <div class="divider-line"></div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- MISSION BRIEF -->
+    <div class="panel span-2">
+      <div class="panel-label">// 001 · MISSION BRIEF</div>
+      <div class="panel-title">Operational Overview</div>
+      <div class="panel-body">
+        Project <strong>JHDJ</strong> is a high-impact covert initiative engineered for adaptability under uncertainty. The core philosophy: <strong>face it when it comes</strong>. No overplanning. No hesitation. Pure execution when the moment demands it.<br><br>
+        This project operates on a <strong>reactive-precision doctrine</strong> — leveraging real-time intelligence and dynamic response frameworks to intercept and neutralize interference vectors as they emerge.
+      </div>
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val">∞</div>
+          <div class="stat-lbl">Adaptability</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">0</div>
+          <div class="stat-lbl">Zero Panic</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">100%</div>
+          <div class="stat-lbl">Commitment</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THREAT LEVEL -->
+    <div class="panel red-accent">
+      <div class="panel-label">// 002 · THREAT INDEX</div>
+      <div class="panel-title">Interference Level</div>
+      <div class="panel-body" style="margin-bottom:20px">
+        External interference vectors detected and <strong style="color:var(--neon-red)">neutralized</strong>. JHDJ protocol engaged.
+      </div>
+      <div class="progress-item">
+        <div class="progress-header"><span>RESILIENCE</span><span>94%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:94%;background:linear-gradient(90deg,#ff0044,rgba(255,0,68,0.4))"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header"><span>ADAPTABILITY</span><span>87%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:87%;background:linear-gradient(90deg,#ff0044,rgba(255,0,68,0.4))"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header"><span>CONTROL</span><span>79%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:79%;background:linear-gradient(90deg,#ff0044,rgba(255,0,68,0.4))"></div></div>
+      </div>
+    </div>
+
+    <!-- LIVE WAVEFORM -->
+    <div class="panel gold-accent">
+      <div class="panel-label">// 003 · LIVE SIGNAL</div>
+      <div class="panel-title">Interference Pattern</div>
+      <div class="interference-canvas">
+        <canvas id="waveCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- PHASE TIMELINE -->
+    <div class="panel span-2">
+      <div class="panel-label">// 004 · PHASE PROTOCOL</div>
+      <div class="panel-title">Operational Timeline</div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-dot-wrap"><div class="tl-dot done"></div><div class="tl-line"></div></div>
+          <div class="tl-content"><div class="tl-phase">PHASE 01 · COMPLETE</div><div class="tl-title">Threat Identification & Intelligence Gathering</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot-wrap"><div class="tl-dot done"></div><div class="tl-line"></div></div>
+          <div class="tl-content"><div class="tl-phase">PHASE 02 · COMPLETE</div><div class="tl-title">Strategic Framework Deployment</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot-wrap"><div class="tl-dot active"></div><div class="tl-line"></div></div>
+          <div class="tl-content"><div class="tl-phase">PHASE 03 · IN PROGRESS</div><div class="tl-title">Active Interference Neutralization ← LIVE</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot-wrap"><div class="tl-dot pending"></div><div class="tl-line"></div></div>
+          <div class="tl-content"><div class="tl-phase">PHASE 04 · STANDBY</div><div class="tl-title pending-text">Outcome Assessment & Victory Protocol</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot-wrap"><div class="tl-dot pending"></div></div>
+          <div class="tl-content"><div class="tl-phase">PHASE 05 · STANDBY</div><div class="tl-title pending-text">Legacy Documentation & Closure</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAGS / ATTRIBUTES -->
+    <div class="panel">
+      <div class="panel-label">// 005 · ATTRIBUTES</div>
+      <div class="panel-title">Core Doctrine</div>
+      <div class="tags">
+        <div class="tag">NO OVERTHINKING</div>
+        <div class="tag">REACT FAST</div>
+        <div class="tag">FEARLESS</div>
+        <div class="tag">IMPROVISE</div>
+        <div class="tag">ADAPT</div>
+        <div class="tag">OVERCOME</div>
+        <div class="tag">FLOW STATE</div>
+        <div class="tag">CHAOS-PROOF</div>
+        <div class="tag">UNSTOPPABLE</div>
+      </div>
+    </div>
+
+    <!-- BIG STATEMENT -->
+    <div class="statement-panel">
+      <div class="big-quote">
+        "जो <span class="accent-word">होगा</span> — <span class="red-word">देखा</span> जाएगा"<br>
+        <span style="font-size:0.6em;opacity:0.6;letter-spacing:6px;color:var(--text-dim)">WHATEVER HAPPENS · WILL BE DEALT WITH · ON SIGHT</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottombar">
+    <span>PROJECT JHDJ · BUILD v4.2.7 · ALL SYSTEMS NOMINAL</span>
+    <span class="classified">▌ CLASSIFIED ▌</span>
+    <span>SECTOR: ALPHA · CLEARANCE: OMEGA</span>
+  </div>
+
+</div>
+
+<script>
+// ── WAVE CANVAS ──
+const canvas = document.getElementById('waveCanvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+let t = 0;
+function drawWave() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const mid = H / 2;
+
+  // Wave 1 — cyan
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0,255,245,0.8)';
+  ctx.lineWidth = 1.5;
+  ctx.shadowColor = '#00fff5';
+  ctx.shadowBlur = 8;
+  for (let x = 0; x <= W; x++) {
+    const y = mid + Math.sin((x / W) * Math.PI * 5 + t) * 22
+                  + Math.sin((x / W) * Math.PI * 9 + t * 1.3) * 10;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Wave 2 — red interference
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(255,0,68,0.6)';
+  ctx.lineWidth = 1;
+  ctx.shadowColor = '#ff0044';
+  ctx.shadowBlur = 6;
+  for (let x = 0; x <= W; x++) {
+    const y = mid + Math.sin((x / W) * Math.PI * 7 - t * 0.8) * 18
+                  + Math.sin((x / W) * Math.PI * 3 - t * 0.5) * 8;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Interference dots
+  ctx.shadowBlur = 0;
+  for (let x = 0; x < W; x += 30) {
+    const y1 = mid + Math.sin((x / W) * Math.PI * 5 + t) * 22 + Math.sin((x / W) * Math.PI * 9 + t * 1.3) * 10;
+    const y2 = mid + Math.sin((x / W) * Math.PI * 7 - t * 0.8) * 18 + Math.sin((x / W) * Math.PI * 3 - t * 0.5) * 8;
+    const iy = (y1 + y2) / 2;
+    ctx.beginPath();
+    ctx.arc(x, iy, 2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,215,0,0.7)';
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 10;
+    ctx.fill();
+  }
+
+  t += 0.03;
+  requestAnimationFrame(drawWave);
+}
+drawWave();
+</script>
+</body>
+</html>
