@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JEE Maths \u2014 Quick Recap</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #2a2a3a;
+    --accent: #f0c040;
+    --accent2: #60c8f0;
+    --accent3: #f07080;
+    --accent4: #80f0a0;
+    --text: #e8e8f0;
+    --muted: #888899;
+    --formula: #1a1a28;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* BG texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 80% 60% at 20% 20%, #1a1030 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, #0a1820 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), #e0a020);
+    color: #0a0a0f;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #f0c040 0%, #ffffff 50%, #60c8f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  /* CHAPTER CARD */
+  .chapter {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .chapter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  .chapter:nth-child(1) { animation-delay: 0.05s; }
+  .chapter:nth-child(2) { animation-delay: 0.10s; }
+  .chapter:nth-child(3) { animation-delay: 0.15s; }
+  .chapter:nth-child(4) { animation-delay: 0.20s; }
+  .chapter:nth-child(5) { animation-delay: 0.25s; }
+  .chapter:nth-child(6) { animation-delay: 0.30s; }
+  .chapter:nth-child(7) { animation-delay: 0.35s; }
+  .chapter:nth-child(8) { animation-delay: 0.40s; }
+  .chapter:nth-child(9) { animation-delay: 0.45s; }
+  .chapter:nth-child(10) { animation-delay: 0.50s; }
+  .chapter:nth-child(11) { animation-delay: 0.55s; }
+  .chapter:nth-child(12) { animation-delay: 0.60s; }
+  .chapter:nth-child(13) { animation-delay: 0.65s; }
+
+  .chapter-header {
+    padding: 14px 18px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ch-icon {
+    font-size: 18px;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .ch-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .ch-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .chapter-body {
+    padding: 14px 18px;
+  }
+
+  /* Topics */
+  .topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .tag {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text);
+  }
+
+  .tag.hot {
+    background: rgba(240,100,80,0.15);
+    border-color: rgba(240,100,80,0.3);
+    color: #f09080;
+  }
+
+  /* Formula box */
+  .formula-box {
+    background: var(--formula);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+
+  .formula-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.7;
+  }
+
+  .formula span.blue { color: var(--accent2); }
+  .formula span.green { color: var(--accent4); }
+  .formula span.red { color: var(--accent3); }
+  .formula span.dim { color: var(--muted); }
+
+  /* Tips */
+  .tip {
+    font-size: 12px;
+    color: var(--muted);
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .tip strong { color: var(--text); }
+
+  /* Accent colors per chapter */
+  .c1 .ch-icon { background: rgba(240,192,64,0.15); }
+  .c2 .ch-icon { background: rgba(96,200,240,0.15); }
+  .c3 .ch-icon { background: rgba(240,112,128,0.15); }
+  .c4 .ch-icon { background: rgba(128,240,160,0.15); }
+  .c5 .ch-icon { background: rgba(200,128,240,0.15); }
+  .c6 .ch-icon { background: rgba(240,160,96,0.15); }
+  .c7 .ch-icon { background: rgba(96,240,200,0.15); }
+  .c8 .ch-icon { background: rgba(240,200,96,0.15); }
+  .c9 .ch-icon { background: rgba(128,160,240,0.15); }
+  .c10 .ch-icon { background: rgba(240,128,192,0.15); }
+  .c11 .ch-icon { background: rgba(160,240,128,0.15); }
+  .c12 .ch-icon { background: rgba(240,96,96,0.15); }
+  .c13 .ch-icon { background: rgba(96,160,240,0.15); }
+
+  .c1 .ch-num { color: #f0c040; }
+  .c2 .ch-num { color: #60c8f0; }
+  .c3 .ch-num { color: #f07080; }
+  .c4 .ch-num { color: #80f0a0; }
+  .c5 .ch-num { color: #c880f0; }
+  .c6 .ch-num { color: #f0a060; }
+  .c7 .ch-num { color: #60f0c8; }
+  .c8 .ch-num { color: #f0c860; }
+  .c9 .ch-num { color: #8090f0; }
+  .c10 .ch-num { color: #f080c0; }
+  .c11 .ch-num { color: #a0f080; }
+  .c12 .ch-num { color: #f06060; }
+  .c13 .ch-num { color: #60a0f0; }
+
+  /* WIDE cards */
+  .wide { grid-column: 1 / -1; }
+
+  /* Section divider */
+  .section-label {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 12px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .section-label span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    animation: fadeUp 0.5s 0.7s ease both;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="badge">JEE Main + Advanced \u00b7
